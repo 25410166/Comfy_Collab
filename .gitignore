@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+data/outputs/*
+!data/outputs/.gitkeep
+data/cache/*
+!data/cache/.gitkeep
+data/temp/*
+!data/temp/.gitkeep
+data/downloads/*
+!data/downloads/.gitkeep
+data/backups/*
+!data/backups/.gitkeep
