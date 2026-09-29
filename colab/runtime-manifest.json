@@ -13,11 +13,14 @@
   ],
   "modelPaths": [
     { "type": "checkpoints", "driveFolder": "MyDrive/ComfyStudio/models/checkpoints" },
+    { "type": "diffusion_models", "driveFolder": "MyDrive/ComfyStudio/models/diffusion_models" },
+    { "type": "text_encoders", "driveFolder": "MyDrive/ComfyStudio/models/text_encoders" },
+    { "type": "clip", "driveFolder": "MyDrive/ComfyStudio/models/text_encoders" },
     { "type": "loras", "driveFolder": "MyDrive/ComfyStudio/models/loras" },
     { "type": "vae", "driveFolder": "MyDrive/ComfyStudio/models/vae" },
     { "type": "controlnet", "driveFolder": "MyDrive/ComfyStudio/models/controlnet" },
-    { "type": "upscale_models", "driveFolder": "MyDrive/ComfyStudio/models/upscaler" }
+    { "type": "upscale_models", "driveFolder": "MyDrive/ComfyStudio/models/upscale_models" }
   ],
   "createdAt": "2026-09-28T00:00:00.000Z",
-  "updatedAt": "2026-09-28T00:00:00.000Z"
+  "updatedAt": "2026-09-29T10:00:00.000Z"
 }

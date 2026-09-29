@@ -45,32 +45,40 @@ def setup_environment():
                 print(f"Failed to parse manifest: {e}")
 
     model_mappings = [
-        ("checkpoints", f"{DRIVE_BASE}/models/checkpoint"),
-        ("loras", f"{DRIVE_BASE}/models/lora"),
+        ("checkpoints", f"{DRIVE_BASE}/models/checkpoints"),
+        ("diffusion_models", f"{DRIVE_BASE}/models/diffusion_models"),
+        ("text_encoders", f"{DRIVE_BASE}/models/text_encoders"),
+        ("clip", f"{DRIVE_BASE}/models/text_encoders"),
+        ("loras", f"{DRIVE_BASE}/models/loras"),
         ("vae", f"{DRIVE_BASE}/models/vae"),
         ("controlnet", f"{DRIVE_BASE}/models/controlnet"),
-        ("upscale_models", f"{DRIVE_BASE}/models/upscaler"),
+        ("upscale_models", f"{DRIVE_BASE}/models/upscale_models"),
     ]
 
     for model_type, drive_dir in model_mappings:
         os.makedirs(drive_dir, exist_ok=True)
         comfy_model_dir = os.path.join(COMFY_DIR, "models", model_type)
-        if os.path.exists(comfy_model_dir) and not os.path.islink(comfy_model_dir):
-            try:
-                # If directory is empty or has standard files, point symlink or extra_model_paths
-                pass
-            except Exception as e:
-                pass
+        os.makedirs(comfy_model_dir, exist_ok=True)
         print(f"Linked/Configured model folder: {model_type} -> {drive_dir}")
 
     # Write extra_model_paths.yaml for ComfyUI
     extra_yaml = f"""
 colab_drive:
     base_path: {DRIVE_BASE}/models
-    checkpoints: checkpoint/
-    loras: lora/
+    checkpoints: checkpoints/
+    diffusion_models: diffusion_models/
+    unet: diffusion_models/
+    text_encoders: text_encoders/
+    clip: text_encoders/
+    loras: loras/
     vae: vae/
     controlnet: controlnet/
+    upscale_models: upscale_models/
+
+colab_drive_legacy:
+    base_path: {DRIVE_BASE}/models
+    checkpoints: checkpoint/
+    loras: lora/
     upscale_models: upscaler/
 """
     with open(os.path.join(COMFY_DIR, "extra_model_paths.yaml"), "w") as f:
