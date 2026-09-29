@@ -32,6 +32,8 @@ drive.mount('/content/drive')
 
 DRIVE_BASE = "/content/drive/MyDrive/ComfyStudio"
 DRIVE_MODELS = os.path.join(DRIVE_BASE, "models")
+DRIVE_OUTPUTS = os.path.join(DRIVE_BASE, "outputs")
+os.makedirs(DRIVE_OUTPUTS, exist_ok=True)
 
 # Các danh mục model chuẩn của ComfyUI
 MODEL_CATEGORIES = [
@@ -46,7 +48,8 @@ MODEL_CATEGORIES = [
     "embeddings"
 ]
 
-print("📁 Khởi tạo cấu trúc thư mục lưu trữ trên Google Drive...")
+print(f"📁 Thư mục lưu ảnh tự động trên Google Drive: {DRIVE_OUTPUTS}")
+print("📁 Khởi tạo cấu trúc thư mục lưu trữ models trên Google Drive...")
 for cat in MODEL_CATEGORIES:
     path = os.path.join(DRIVE_MODELS, cat)
     os.makedirs(path, exist_ok=True)
@@ -156,9 +159,161 @@ cells.append({
     "source": [line + "\n" for line in cell3_code.strip().split("\n")]
 })
 
-# Cell 4: Step 3: Tải bộ Model Qwen-Image-2.1 (Tự động bỏ qua nếu đã có trên Drive)
-cell4_code = """#@title 3. Tải bộ Model Qwen-Image-2.1 (Tự động bỏ qua nếu đã có trên Drive)
-#@markdown Tải bộ 3 model Qwen-Image-2.1 phục vụ workflow Text-to-Image:
+# Cell 3A: Step 3: Tải Bộ Model Siêu Tốc: SDXL Realistic, Realistic Vision V6.0, VAE, LoRA, ControlNet & Upscaler (Render 5s - 20s)
+cell_realistic_code = """#@title 3. Tải Bộ Model Siêu Tốc: SDXL Realistic, Realistic Vision V6.0, VAE, LoRA, ControlNet & Upscaler (Render 5s - 20s)
+#@markdown Tải trọn bộ model tiêu chuẩn vàng cho tạo ảnh người thật siêu thực (Photorealistic & High-Fashion):
+#@markdown - ⚡ **RealVisXL V4.0 (SDXL)**: `checkpoints/realvisxlV40_v40Bakedvae.safetensors` (~6.6 GB) - Tạo ảnh 8k siêu thực trong 15-20s.
+#@markdown - ⚡ **Realistic Vision V6.0/V5.1 (SD1.5)**: `checkpoints/realisticVisionV60B1_v51VAE.safetensors` (~2.1 GB) - Tạo ảnh người mẫu trong 5-8s.
+#@markdown - 🎛️ **SDXL VAE Fix**: `vae/sdxl_vae.safetensors` (~335 MB)
+#@markdown - 🔍 **4x-UltraSharp Upscaler**: `upscale_models/4x-UltraSharp.pth` (~67 MB) - Tăng độ phân giải lên 4k siêu nét.
+#@markdown - 🎨 **LoRA Add-Detail-XL**: `loras/add-detail-xl.safetensors` (~50 MB) - Tăng độ sắc nét của da, mắt, tóc.
+#@markdown - 🧍 **ControlNet OpenPose (SD1.5)**: `controlnet/control_v11p_sd15_openpose.pth` (~1.4 GB) - Định hình dáng đứng, tư thế người mẫu.
+#@markdown
+#@markdown *Chỉ tải 1 lần vào Google Drive (`MyDrive/ComfyStudio/models`). Các lần sau mở Colab sẽ tự động nhận diện và bỏ qua không tải lại.*
+
+import os
+import sys
+import inspect
+from huggingface_hub import hf_hub_download
+
+DRIVE_DIR = "/content/drive/MyDrive/ComfyStudio/models"
+COMFY_DIR = "/content/ComfyUI/models"
+has_drive = os.path.exists(DRIVE_DIR)
+TARGET_BASE = DRIVE_DIR if has_drive else COMFY_DIR
+
+FAST_REALISTIC_MODELS = [
+    {
+        "desc": "1. SDXL Realistic Checkpoint: RealVisXL V4.0 (Render 15-20s)",
+        "repo_id": "SG161222/RealVisXL_V4.0",
+        "category": "checkpoints",
+        "rel_path": "RealVisXL_V4.0.safetensors",
+        "basename": "realvisxlV40_v40Bakedvae.safetensors",
+        "min_size_mb": 5000
+    },
+    {
+        "desc": "2. SD1.5 Checkpoint: Realistic Vision V5.1/V6.0 (Render 5s)",
+        "repo_id": "SG161222/Realistic_Vision_V5.1_noVAE",
+        "category": "checkpoints",
+        "rel_path": "Realistic_Vision_V5.1_fp16-no-ema.safetensors",
+        "basename": "realisticVisionV60B1_v51VAE.safetensors",
+        "min_size_mb": 1800
+    },
+    {
+        "desc": "3. SDXL VAE (Khử mờ & cân chỉnh màu)",
+        "repo_id": "stabilityai/sdxl-vae",
+        "category": "vae",
+        "rel_path": "sdxl_vae.safetensors",
+        "basename": "sdxl_vae.safetensors",
+        "min_size_mb": 200
+    },
+    {
+        "desc": "4. AI Upscaler 4x-UltraSharp (Nâng nét ảnh 4k)",
+        "repo_id": "lokcx/4x-Ultrasharp",
+        "category": "upscale_models",
+        "rel_path": "4x-UltraSharp.pth",
+        "basename": "4x-UltraSharp.pth",
+        "min_size_mb": 50
+    },
+    {
+        "desc": "5. LoRA Add-Detail-XL (Tăng chi tiết da, mắt, tóc)",
+        "repo_id": "OedoSoldier/detail-tweaker-lora",
+        "category": "loras",
+        "rel_path": "add-detail-xl.safetensors",
+        "basename": "add-detail-xl.safetensors",
+        "min_size_mb": 30
+    },
+    {
+        "desc": "6. ControlNet OpenPose (Kiểm soát dáng người mẫu)",
+        "repo_id": "lllyasviel/ControlNet-v1-1",
+        "category": "controlnet",
+        "rel_path": "control_v11p_sd15_openpose.pth",
+        "basename": "control_v11p_sd15_openpose.pth",
+        "min_size_mb": 1000
+    }
+]
+
+print(f"🎯 Vị trí lưu trữ: {TARGET_BASE} (Google Drive bền vững)")
+
+for item in FAST_REALISTIC_MODELS:
+    desc = item["desc"]
+    repo_id = item["repo_id"]
+    category = item["category"]
+    rel_path = item["rel_path"]
+    basename = item["basename"]
+    min_bytes = item["min_size_mb"] * 1024 * 1024
+
+    drive_file = os.path.join(DRIVE_DIR, category, basename) if has_drive else None
+    comfy_file = os.path.join(COMFY_DIR, category, basename)
+
+    # 1. Kiểm tra nếu đã có trên Google Drive
+    if drive_file and os.path.exists(drive_file) and os.path.getsize(drive_file) >= min_bytes:
+        size_gb = os.path.getsize(drive_file) / (1024 ** 3)
+        print(f"⏭️  [ĐÃ CÓ TRÊN DRIVE] {desc} ({size_gb:.2f} GB) -> BỎ QUA TẢI LẠI.")
+        if not os.path.exists(comfy_file):
+            try:
+                os.makedirs(os.path.dirname(comfy_file), exist_ok=True)
+                os.symlink(drive_file, comfy_file)
+                print(f"    🔗 Đã liên kết symlink sang ComfyUI: {comfy_file}")
+            except Exception:
+                pass
+        continue
+
+    # 2. Kiểm tra nếu đã có trên local ComfyUI
+    if os.path.exists(comfy_file) and os.path.getsize(comfy_file) >= min_bytes:
+        size_gb = os.path.getsize(comfy_file) / (1024 ** 3)
+        print(f"⏭️  [ĐÃ CÓ TRÊN COMFYUI] {desc} ({size_gb:.2f} GB) -> BỎ QUA TẢI LẠI.")
+        continue
+
+    # 3. Tải từ HuggingFace
+    print(f"\\n⬇️  Đang tải {desc}...")
+    print(f"   Repo: {repo_id}/{rel_path} -> {category}/{basename}")
+
+    dest_dir = os.path.join(TARGET_BASE, category)
+    os.makedirs(dest_dir, exist_ok=True)
+
+    try:
+        download_kwargs = {
+            "repo_id": repo_id,
+            "filename": rel_path,
+            "local_dir": dest_dir
+        }
+        sig = inspect.signature(hf_hub_download).parameters
+        if "local_dir_use_symlinks" in sig:
+            download_kwargs["local_dir_use_symlinks"] = False
+
+        downloaded_path = hf_hub_download(**download_kwargs)
+        final_target = os.path.join(dest_dir, basename)
+        if downloaded_path != final_target and os.path.exists(downloaded_path):
+            if os.path.exists(final_target):
+                os.remove(final_target)
+            os.rename(downloaded_path, final_target)
+
+        print(f"✅ Đã tải xong: {desc}")
+
+        if has_drive and os.path.exists(drive_file) and not os.path.exists(comfy_file):
+            try:
+                os.makedirs(os.path.dirname(comfy_file), exist_ok=True)
+                os.symlink(drive_file, comfy_file)
+                print(f"   🔗 Đã liên kết symlink sang ComfyUI: {comfy_file}")
+            except Exception:
+                pass
+    except Exception as e:
+        print(f"⚠️ Không tải được {basename}: {e}")
+
+print("\\n🎉 Hoàn thành kiểm tra & tải bộ Model Siêu Tốc (SDXL, SD1.5, VAE, LoRA, Upscaler)!")
+"""
+
+cells.append({
+    "cell_type": "code",
+    "execution_count": None,
+    "metadata": {},
+    "outputs": [],
+    "source": [line + "\n" for line in cell_realistic_code.strip().split("\n")]
+})
+
+# Cell 4: Step 3B: Tải bộ Model Qwen-Image-2.1 (Tùy chọn - Dành cho ai muốn dùng Qwen)
+cell4_code = """#@title 3B. Tải bộ Model Qwen-Image-2.1 (Tùy chọn - Dành cho ai muốn dùng Qwen)
+#@markdown Tải bộ 3 model Qwen-Image-2.1 phục vụ workflow Text-to-Image (Lưu ý: Model nặng 30GB, gen ~20p):
 #@markdown - 1. **Diffusion Model (INT8)**: `diffusion_models/qwen_image_2.1_int8_convrot.safetensors` (~12.3 GB)
 #@markdown - 2. **Text Encoder Qwen3-VL 8B (INT8)**: `text_encoders/qwen3vl_8b_int8_convrot.safetensors` (~8.8 GB)
 #@markdown - 3. **VAE (BF16)**: `vae/qwen_image_2.1_vae_bf16.safetensors` (~254 MB)
@@ -625,11 +780,17 @@ if not os.path.exists("/usr/local/bin/cloudflared") and not os.path.exists("/usr
     !dpkg -i cloudflared-linux-amd64.deb > /dev/null 2>&1
     !rm -f cloudflared-linux-amd64.deb
 
-# 2. Khởi chạy ComfyUI dưới nền và ghi log vào /content/comfyui.log
-print("🚀 Đang khởi chạy ComfyUI backend...")
+# 2. Khởi chạy ComfyUI dưới nền và lưu toàn bộ output trực tiếp vào Google Drive
+print("🚀 Đang khởi chạy ComfyUI backend (Output tự động lưu vào Google Drive)...")
 log_file = open("/content/comfyui.log", "w")
 comfy_proc = subprocess.Popen(
-    ["python", "/content/ComfyUI/main.py", "--listen", "127.0.0.1", "--port", "8188", "--preview-method", "auto"],
+    [
+        "python", "/content/ComfyUI/main.py",
+        "--listen", "127.0.0.1",
+        "--port", "8188",
+        "--preview-method", "auto",
+        "--output-directory", "/content/drive/MyDrive/ComfyStudio/outputs"
+    ],
     stdout=log_file,
     stderr=subprocess.STDOUT
 )

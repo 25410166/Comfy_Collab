@@ -3,6 +3,7 @@ dist/
 .env
 data/outputs/*
 !data/outputs/.gitkeep
+!data/outputs/*.png
 data/cache/*
 !data/cache/.gitkeep
 data/temp/*
@@ -11,3 +12,5 @@ data/downloads/*
 !data/downloads/.gitkeep
 data/backups/*
 !data/backups/.gitkeep
+apps/data/
+

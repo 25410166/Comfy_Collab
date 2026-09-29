@@ -5,12 +5,22 @@ let socketInstance: Socket | null = null;
 
 export function getSocket(): Socket {
   if (!socketInstance) {
-    socketInstance = io(window.location.origin, {
-      transports: ['websocket', 'polling']
+    // When running in dev mode on port 2000, connect directly to backend on port 2001 to bypass Vite WS proxy
+    const socketUrl = window.location.port === '2000'
+      ? `${window.location.protocol}//${window.location.hostname}:2001`
+      : window.location.origin;
+
+    socketInstance = io(socketUrl, {
+      transports: ['websocket', 'polling'],
+      autoConnect: true,
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1500
     });
   }
   return socketInstance;
 }
+
 
 export function useSocketEvent(event: string, callback: (data: any) => void) {
   const callbackRef = useRef(callback);

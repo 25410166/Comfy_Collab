@@ -1,0 +1,91 @@
+{
+  "1": {
+    "inputs": {
+      "ckpt_name": "realisticVisionV60B1_v51VAE.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": { "title": "Load Realistic Vision Model" }
+  },
+  "2": {
+    "inputs": {
+      "control_net_name": "control_v11p_sd15_openpose.pth"
+    },
+    "class_type": "ControlNetLoader",
+    "_meta": { "title": "Load OpenPose ControlNet" }
+  },
+  "3": {
+    "inputs": {
+      "image": "example_pose.png",
+      "upload": "image"
+    },
+    "class_type": "LoadImage",
+    "_meta": { "title": "Load Pose Image / Skeleton" }
+  },
+  "4": {
+    "inputs": {
+      "width": 512,
+      "height": 768,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": { "title": "Empty Latent Image (512x768)" }
+  },
+  "5": {
+    "inputs": {
+      "text": "Full body fashion model in haute couture runway outfit, perfect athletic posture, studio lighting, highly detailed face, realistic skin texture, 8k uhd, masterpiece",
+      "clip": ["1", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": { "title": "Positive Prompt" }
+  },
+  "6": {
+    "inputs": {
+      "text": "deformed, bad anatomy, bad hands, missing fingers, extra limbs, ugly, blurry, low quality, cartoon, 3d render",
+      "clip": ["1", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": { "title": "Negative Prompt" }
+  },
+  "7": {
+    "inputs": {
+      "strength": 1.0,
+      "conditioning": ["5", 0],
+      "control_net": ["2", 0],
+      "image": ["3", 0]
+    },
+    "class_type": "ControlNetApply",
+    "_meta": { "title": "Apply OpenPose ControlNet" }
+  },
+  "8": {
+    "inputs": {
+      "seed": 83719462,
+      "steps": 20,
+      "cfg": 6.5,
+      "sampler_name": "dpmpp_sde",
+      "scheduler": "karras",
+      "denoise": 1,
+      "model": ["1", 0],
+      "positive": ["7", 0],
+      "negative": ["6", 0],
+      "latent_image": ["4", 0]
+    },
+    "class_type": "KSampler",
+    "_meta": { "title": "KSampler (SD1.5 5s)" }
+  },
+  "9": {
+    "inputs": {
+      "samples": ["8", 0],
+      "vae": ["1", 2]
+    },
+    "class_type": "VAEDecode",
+    "_meta": { "title": "VAE Decode" }
+  },
+  "10": {
+    "inputs": {
+      "filename_prefix": "ControlNet_OpenPose",
+      "images": ["9", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": { "title": "Save Controlled Image" }
+  }
+}

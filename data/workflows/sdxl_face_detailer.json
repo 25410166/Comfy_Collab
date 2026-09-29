@@ -1,0 +1,77 @@
+{
+  "1": {
+    "inputs": {
+      "ckpt_name": "realvisxlV40_v40Bakedvae.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": { "title": "Load SDXL Checkpoint" }
+  },
+  "2": {
+    "inputs": {
+      "lora_name": "add-detail-xl.safetensors",
+      "strength_model": 0.8,
+      "strength_clip": 0.8,
+      "model": ["1", 0],
+      "clip": ["1", 1]
+    },
+    "class_type": "LoraLoader",
+    "_meta": { "title": "Add-Detail-XL LoRA" }
+  },
+  "3": {
+    "inputs": {
+      "width": 832,
+      "height": 1216,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": { "title": "Empty Latent Image (832x1216)" }
+  },
+  "4": {
+    "inputs": {
+      "text": "Extreme close-up beauty portrait of a gorgeous muse, sharp detailed iris, luminous skin with natural pores, individual eyelashes, soft dramatic lighting, 105mm macro lens, ultra photorealistic, 8k uhd, cinematic film still",
+      "clip": ["2", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": { "title": "Positive Prompt" }
+  },
+  "5": {
+    "inputs": {
+      "text": "ugly, deformed eyes, blurred pupils, plastic skin, cartoon, anime, extra limbs, bad teeth, bad hands, low resolution, artifacts",
+      "clip": ["2", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": { "title": "Negative Prompt" }
+  },
+  "6": {
+    "inputs": {
+      "seed": 58392019,
+      "steps": 22,
+      "cfg": 5.5,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "denoise": 1,
+      "model": ["2", 0],
+      "positive": ["4", 0],
+      "negative": ["5", 0],
+      "latent_image": ["3", 0]
+    },
+    "class_type": "KSampler",
+    "_meta": { "title": "KSampler (Face Detail)" }
+  },
+  "7": {
+    "inputs": {
+      "samples": ["6", 0],
+      "vae": ["1", 2]
+    },
+    "class_type": "VAEDecode",
+    "_meta": { "title": "VAE Decode" }
+  },
+  "8": {
+    "inputs": {
+      "filename_prefix": "SDXL_FaceDetail",
+      "images": ["7", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": { "title": "Save Image" }
+  }
+}

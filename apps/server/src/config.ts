@@ -2,8 +2,21 @@ import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
 
-// Load .env from root or server dir
-const rootEnvPath = path.resolve(__dirname, '../../../.env');
+// Find workspace root containing data directory
+let searchDir = process.cwd();
+let foundRoot = searchDir;
+for (let i = 0; i < 5; i++) {
+  if (fs.existsSync(path.join(searchDir, 'data'))) {
+    foundRoot = searchDir;
+    break;
+  }
+  const parent = path.dirname(searchDir);
+  if (parent === searchDir) break;
+  searchDir = parent;
+}
+const WORKSPACE_ROOT = foundRoot;
+
+const rootEnvPath = path.join(WORKSPACE_ROOT, '.env');
 if (fs.existsSync(rootEnvPath)) {
   dotenv.config({ path: rootEnvPath });
 } else {
@@ -11,11 +24,11 @@ if (fs.existsSync(rootEnvPath)) {
 }
 
 const BASE_DATA_DIR = process.env.DATA_DIR 
-  ? path.resolve(__dirname, process.env.DATA_DIR)
-  : path.resolve(__dirname, '../../../data');
+  ? path.resolve(WORKSPACE_ROOT, process.env.DATA_DIR)
+  : path.join(WORKSPACE_ROOT, 'data');
 
 export const config = {
-  port: parseInt(process.env.PORT || '5000', 10),
+  port: parseInt(process.env.PORT || '2001', 10),
   mongoUri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/comfy_studio',
   dataDir: BASE_DATA_DIR,
   paths: {

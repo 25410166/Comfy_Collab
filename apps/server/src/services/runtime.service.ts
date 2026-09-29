@@ -67,6 +67,13 @@ export class RuntimeService {
       : await this.getActiveRuntime();
     if (!runtime) throw new Error('Runtime not found');
 
+    if (runtime.endpoint && runtime.endpoint.startsWith('http')) {
+      const cleanEndpoint = runtime.endpoint.replace(/\/+$/, '');
+      if (comfyUIService.getEndpoint() !== cleanEndpoint) {
+        comfyUIService.setEndpoint(cleanEndpoint);
+      }
+    }
+
     const health = await comfyUIService.checkHealth();
     if (health.ok) {
       runtime.status = 'ready';
@@ -86,6 +93,19 @@ export class RuntimeService {
         }
         runtime.comfyVersion = sys.comfyui_version || 'Latest';
         runtime.pythonVersion = sys.python_version || '';
+      }
+
+      // Fetch active custom nodes and models from ComfyUI
+      try {
+        const info = await comfyUIService.getLoadedModelsAndNodes();
+        if (info.customNodes && info.customNodes.length > 0) {
+          runtime.customNodesInstalled = info.customNodes;
+        }
+        if (info.models && info.models.length > 0) {
+          runtime.modelsAvailable = info.models;
+        }
+      } catch (err) {
+        console.error('[RuntimeService] Failed to load object info:', err);
       }
     } else {
       runtime.status = 'offline';

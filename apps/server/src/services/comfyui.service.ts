@@ -19,9 +19,11 @@ export class ComfyUIService {
   private endpoint: string = config.comfy.endpoint;
   private isConnected: boolean = false;
   private reconnectTimer: NodeJS.Timeout | null = null;
+  private pollerTimer: NodeJS.Timeout | null = null;
 
   constructor() {
     this.initWebSocket();
+    this.startQueuePoller();
   }
 
   setEndpoint(url: string) {
@@ -43,11 +45,94 @@ export class ComfyUIService {
 
   async checkHealth(): Promise<{ ok: boolean; system?: any; error?: string }> {
     try {
-      const res = await axios.get(`${this.endpoint}/system_stats`, { timeout: 4000 });
+      const res = await axios.get(`${this.endpoint}/system_stats`, { timeout: 15000 });
       return { ok: true, system: res.data };
     } catch (err: any) {
       return { ok: false, error: err.message };
     }
+  }
+
+  async getLoadedModelsAndNodes(): Promise<{ customNodes: string[]; models: string[] }> {
+    try {
+      const res = await axios.get(`${this.endpoint}/object_info`, { timeout: 15000 });
+      const info = res.data || {};
+      const customNodes = Object.keys(info);
+      const modelSet = new Set<string>();
+
+      const checkLoaderInputs = (nodeName: string, inputFields: string[]) => {
+        const node = info[nodeName];
+        if (!node?.input?.required) return;
+        for (const field of inputFields) {
+          const list = node.input.required[field]?.[0];
+          if (Array.isArray(list)) {
+            list.forEach((m: any) => {
+              if (typeof m === 'string' && m && m !== 'pixel_space') {
+                modelSet.add(m);
+              }
+            });
+          }
+        }
+      };
+
+      checkLoaderInputs('UNETLoader', ['unet_name']);
+      checkLoaderInputs('VAELoader', ['vae_name']);
+      checkLoaderInputs('CLIPLoader', ['clip_name']);
+      checkLoaderInputs('DualCLIPLoader', ['clip_name1', 'clip_name2']);
+      checkLoaderInputs('CheckpointLoaderSimple', ['ckpt_name']);
+      checkLoaderInputs('LoraLoader', ['lora_name']);
+      checkLoaderInputs('ControlNetLoader', ['control_net_name']);
+
+      return {
+        customNodes,
+        models: Array.from(modelSet)
+      };
+    } catch (err) {
+      console.error('[ComfyUI] Failed to fetch object_info:', err);
+      return { customNodes: [], models: [] };
+    }
+  }
+
+  private startQueuePoller() {
+    if (this.pollerTimer) return;
+    this.pollerTimer = setInterval(async () => {
+      try {
+        const pendingGens = await Generation.find({
+          status: { $in: ['queued', 'executing'] }
+        });
+        if (pendingGens.length === 0) return;
+
+        // Fetch queue & history from ComfyUI
+        const [queueRes, historyRes] = await Promise.allSettled([
+          axios.get(`${this.endpoint}/queue`, { timeout: 8000 }),
+          axios.get(`${this.endpoint}/history?max_items=20`, { timeout: 8000 })
+        ]);
+
+        const queueRunning = queueRes.status === 'fulfilled' ? queueRes.value.data?.queue_running || [] : [];
+        const runningPromptIds = new Set(queueRunning.map((item: any) => item[1]));
+
+        const historyData = historyRes.status === 'fulfilled' ? historyRes.value.data || {} : {};
+
+        for (const gen of pendingGens) {
+          // 1. Check if finished in history
+          if (historyData[gen.promptId]) {
+            await this.handleExecutionCompleted(gen.promptId);
+            continue;
+          }
+
+          // 2. Check if currently running
+          if (runningPromptIds.has(gen.promptId)) {
+            if (gen.status !== 'executing') {
+              gen.status = 'executing';
+              gen.startedAt = gen.startedAt || new Date();
+              await gen.save();
+              socketService.emit('generation.started', { promptId: gen.promptId });
+            }
+          }
+        }
+      } catch (e) {
+        // Suppress poller noise
+      }
+    }, 3000);
   }
 
   private initWebSocket() {
@@ -192,8 +277,12 @@ export class ComfyUIService {
             const subfolder = img.subfolder || '';
             const type = img.type || 'output';
 
-            // Download file locally to data/outputs/
-            const localDestPath = path.join(config.paths.outputs, filename);
+            const ext = path.extname(filename).toLowerCase();
+            const baseName = path.basename(filename, ext);
+            // Ensure unique local filename per prompt/run so subsequent outputs never overwrite previous ones
+            const safePromptId = (promptId || 'out').slice(0, 8);
+            const uniqueFilename = `${baseName}_${safePromptId}_${Date.now()}${ext}`;
+            const localDestPath = path.join(config.paths.outputs, uniqueFilename);
             const downloadUrl = `${this.endpoint}/view?filename=${encodeURIComponent(
               filename
             )}&subfolder=${encodeURIComponent(subfolder)}&type=${type}`;
@@ -207,16 +296,15 @@ export class ComfyUIService {
                 writer.on('error', reject);
               });
 
-              const ext = path.extname(filename).toLowerCase();
               let mediaType: 'image' | 'video' | 'audio' | 'other' = 'image';
               if (['.mp4', '.webm', '.mov', '.mkv'].includes(ext)) mediaType = 'video';
               else if (['.mp3', '.wav', '.flac'].includes(ext)) mediaType = 'audio';
 
               outputs.push({
-                filename,
+                filename: uniqueFilename,
                 subfolder,
                 type,
-                url: `/api/generations/file/${filename}`,
+                url: `/api/generations/file/${uniqueFilename}`,
                 localPath: localDestPath,
                 mediaType
               });

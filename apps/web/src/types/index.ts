@@ -16,6 +16,17 @@ export interface Workflow {
     classType: string;
     required: boolean;
   }>;
+  samplePrompts?: Array<{
+    title: string;
+    category?: string;
+    positive: string;
+    negative: string;
+    imageUrl?: string;
+    width?: number;
+    height?: number;
+    steps?: number;
+    cfg?: number;
+  }>;
   sync: {
     local: boolean;
     drive: boolean;
@@ -112,9 +123,14 @@ export interface Generation {
     samplerName?: string;
     scheduler?: string;
     model?: string;
+    width?: number;
+    height?: number;
   };
   executionTimeMs?: number;
   error?: string | null;
+  startedAt?: string;
+  completedAt?: string;
+
   createdAt: string;
 }
 
@@ -128,3 +144,20 @@ export interface DependencyResult {
     missing: Array<{ classType: string; name?: string }>;
   };
 }
+
+export interface PromptPreset {
+  _id: string;
+  title: string;
+  category: 'model' | 'outfit_swap' | 'face_swap';
+  positive: string;
+  negative: string;
+  imageUrl?: string;
+  tags: string[];
+  width: number;
+  height: number;
+  steps: number;
+  cfg: number;
+  samplerName?: string;
+  createdAt: string;
+}
+

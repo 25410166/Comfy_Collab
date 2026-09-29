@@ -17,6 +17,7 @@ export interface IRuntime extends Document {
     freeVram?: number;
   };
   customNodesInstalled: string[];
+  modelsAvailable: string[];
   lastConnectedAt?: Date;
   lastHeartbeatAt?: Date;
   isDefault: boolean;
@@ -39,6 +40,7 @@ const RuntimeSchema = new Schema<IRuntime>(
       freeVram: { type: Number, default: 0 }
     },
     customNodesInstalled: [{ type: String }],
+    modelsAvailable: [{ type: String }],
     lastConnectedAt: { type: Date },
     lastHeartbeatAt: { type: Date },
     isDefault: { type: Boolean, default: true }

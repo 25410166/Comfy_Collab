@@ -131,15 +131,22 @@ export class DependencyService {
 
   async resolveDependencies(
     workflowData: any,
-    installedRuntimeNodes: string[] = []
+    installedRuntimeNodes: string[] = [],
+    runtimeModels: string[] = []
   ): Promise<DependencyResult> {
     const { models, customNodes } = this.parseWorkflow(workflowData);
 
     const installedModels: Array<{ name: string; type: string; path?: string }> = [];
     const missingModels: Array<{ name: string; type: string }> = [];
 
-    // Check DB and local files
+    const runtimeModelSet = new Set(runtimeModels.map((m) => m.toLowerCase().trim()));
+
+    // Check DB, local files, and remote Colab/Drive runtime
     for (const m of models) {
+      const cleanName = m.name.toLowerCase().trim();
+      const existsInRuntime = runtimeModelSet.has(cleanName) ||
+        Array.from(runtimeModelSet).some((rm) => rm.endsWith(cleanName) || cleanName.endsWith(rm));
+
       // Check in MongoDB
       const fileRecord = await ModelFile.findOne({
         filename: new RegExp(`^${escapeRegex(m.name)}$`, 'i')
@@ -149,7 +156,13 @@ export class DependencyService {
       const localDiskPath = path.join(config.paths.models, m.type, m.name);
       const existsOnDisk = fs.existsSync(localDiskPath);
 
-      if (fileRecord || existsOnDisk) {
+      if (existsInRuntime) {
+        installedModels.push({
+          name: m.name,
+          type: m.type,
+          path: 'Cloud GPU (Google Colab / Drive)'
+        });
+      } else if (fileRecord || existsOnDisk) {
         installedModels.push({
           name: m.name,
           type: m.type,

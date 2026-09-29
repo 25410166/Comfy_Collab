@@ -1,0 +1,66 @@
+{
+  "1": {
+    "inputs": {
+      "ckpt_name": "realisticVisionV60B1_v51VAE.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": { "title": "Load Realistic Vision Checkpoint" }
+  },
+  "2": {
+    "inputs": {
+      "width": 512,
+      "height": 768,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": { "title": "Empty Latent Image (512x768)" }
+  },
+  "3": {
+    "inputs": {
+      "text": "RAW street style photography of a beautiful model in Paris, natural candid smile, stylish beige trench coat, soft golden hour sunlight, 50mm f/1.8, bokeh, hyperdetailed skin, authentic look, 8k",
+      "clip": ["1", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": { "title": "Positive Prompt" }
+  },
+  "4": {
+    "inputs": {
+      "text": "deformed, bad anatomy, disfigured, poorly drawn face, mutation, extra limb, ugly, disgusting, blurred, watermark, bad hands, cartoon, 3d render",
+      "clip": ["1", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": { "title": "Negative Prompt" }
+  },
+  "5": {
+    "inputs": {
+      "seed": 91823712,
+      "steps": 20,
+      "cfg": 6.0,
+      "sampler_name": "dpmpp_sde",
+      "scheduler": "karras",
+      "denoise": 1,
+      "model": ["1", 0],
+      "positive": ["3", 0],
+      "negative": ["4", 0],
+      "latent_image": ["2", 0]
+    },
+    "class_type": "KSampler",
+    "_meta": { "title": "KSampler (Ultra-Fast 5s)" }
+  },
+  "6": {
+    "inputs": {
+      "samples": ["5", 0],
+      "vae": ["1", 2]
+    },
+    "class_type": "VAEDecode",
+    "_meta": { "title": "VAE Decode" }
+  },
+  "7": {
+    "inputs": {
+      "filename_prefix": "RealisticVision_V6",
+      "images": ["6", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": { "title": "Save Image" }
+  }
+}

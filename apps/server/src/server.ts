@@ -5,6 +5,7 @@ import { config } from './config.js';
 import { connectDatabase } from './database/index.js';
 import { socketService } from './services/socket.service.js';
 
+// ComfyStudio Server Runtime v1.0.1
 import { workflowRoutes } from './modules/workflows/routes.js';
 import { modelRoutes } from './modules/models/routes.js';
 import { downloadRoutes } from './modules/downloads/routes.js';
@@ -12,6 +13,7 @@ import { runtimeRoutes } from './modules/runtime/routes.js';
 import { generationRoutes } from './modules/generations/routes.js';
 import { driveRoutes } from './modules/drive/routes.js';
 import { settingsRoutes } from './modules/settings/routes.js';
+import { promptRoutes } from './modules/prompts/routes.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -36,6 +38,7 @@ app.use('/api/runtime', runtimeRoutes);
 app.use('/api/generations', generationRoutes);
 app.use('/api/drive', driveRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/prompts', promptRoutes);
 
 // Health route
 app.get('/api/health', (req: Request, res: Response) => {
@@ -73,8 +76,9 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 async function bootstrap() {
   try {
     await connectDatabase();
-    server.listen(config.port, () => {
+    server.listen(config.port, '0.0.0.0', () => {
       console.log(`===============================================`);
+
       console.log(`🚀 ComfyUI Studio Server running on port ${config.port}`);
       console.log(`📡 API endpoint: http://localhost:${config.port}/api`);
       console.log(`===============================================`);

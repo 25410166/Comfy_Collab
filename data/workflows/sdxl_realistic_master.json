@@ -1,0 +1,66 @@
+{
+  "1": {
+    "inputs": {
+      "ckpt_name": "realvisxlV40_v40Bakedvae.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": { "title": "Load SDXL Checkpoint" }
+  },
+  "2": {
+    "inputs": {
+      "width": 832,
+      "height": 1216,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": { "title": "Empty Latent Image (Portrait 832x1216)" }
+  },
+  "3": {
+    "inputs": {
+      "text": "Award-winning RAW cinematic portrait of a stunning elegant woman, authentic skin pores, fine skin texture, soft chiaroscuro studio lighting, 85mm f/1.4 lens, natural gaze, luxury atmosphere, photorealistic, 8k uhd, masterpiece",
+      "clip": ["1", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": { "title": "Positive Prompt" }
+  },
+  "4": {
+    "inputs": {
+      "text": "ugly, deformed, noisy, blurry, low contrast, cartoon, anime, 3d render, extra limbs, bad hands, mutated fingers, plastic skin, oversaturated, amateur",
+      "clip": ["1", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": { "title": "Negative Prompt" }
+  },
+  "5": {
+    "inputs": {
+      "seed": 42891234,
+      "steps": 20,
+      "cfg": 5.5,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "denoise": 1,
+      "model": ["1", 0],
+      "positive": ["3", 0],
+      "negative": ["4", 0],
+      "latent_image": ["2", 0]
+    },
+    "class_type": "KSampler",
+    "_meta": { "title": "KSampler (SDXL Fast 20s)" }
+  },
+  "6": {
+    "inputs": {
+      "samples": ["5", 0],
+      "vae": ["1", 2]
+    },
+    "class_type": "VAEDecode",
+    "_meta": { "title": "VAE Decode" }
+  },
+  "7": {
+    "inputs": {
+      "filename_prefix": "SDXL_RealVis",
+      "images": ["6", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": { "title": "Save Image" }
+  }
+}

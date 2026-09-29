@@ -7,6 +7,18 @@ export interface IWorkflowVersion {
   comment?: string;
 }
 
+export interface ISamplePrompt {
+  title: string;
+  category?: string;
+  positive: string;
+  negative: string;
+  imageUrl?: string;
+  width?: number;
+  height?: number;
+  steps?: number;
+  cfg?: number;
+}
+
 export interface IWorkflow extends Document {
   name: string;
   description?: string;
@@ -27,6 +39,7 @@ export interface IWorkflow extends Document {
     classType: string;
     required: boolean;
   }>;
+  samplePrompts?: ISamplePrompt[];
   sync: {
     local: boolean;
     drive: boolean;
@@ -61,6 +74,19 @@ const WorkflowSchema = new Schema<IWorkflow>(
         name: { type: String, required: true },
         classType: { type: String, required: true },
         required: { type: Boolean, default: true }
+      }
+    ],
+    samplePrompts: [
+      {
+        title: { type: String, default: '' },
+        category: { type: String, default: 'Portrait' },
+        positive: { type: String, default: '' },
+        negative: { type: String, default: '' },
+        imageUrl: { type: String, default: '' },
+        width: { type: Number, default: 768 },
+        height: { type: Number, default: 768 },
+        steps: { type: Number, default: 12 },
+        cfg: { type: Number, default: 1.0 }
       }
     ],
     sync: {

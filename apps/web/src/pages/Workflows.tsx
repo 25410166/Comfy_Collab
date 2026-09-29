@@ -170,9 +170,25 @@ export function Workflows() {
           {workflows.map((wf) => (
             <div
               key={wf._id}
-              className="bg-[#111827] border border-slate-800 hover:border-slate-700 rounded-xl p-5 flex flex-col justify-between transition-all group"
+              className="bg-[#111827] border border-slate-800 hover:border-slate-700 rounded-xl p-5 flex flex-col justify-between transition-all group overflow-hidden"
             >
               <div>
+                {wf.thumbnailUrl && (
+                  <div className="w-full h-36 rounded-lg overflow-hidden mb-3 bg-slate-950 border border-slate-800 relative">
+                    <img
+                      src={wf.thumbnailUrl}
+                      alt={wf.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    {wf.samplePrompts && wf.samplePrompts.length > 0 && (
+                      <span className="absolute bottom-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/75 backdrop-blur-sm text-indigo-300 border border-indigo-500/30">
+                        ✨ {wf.samplePrompts.length} Presets
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex items-start justify-between gap-2">
                   <Link
                     to={`/workflows/${wf._id}`}

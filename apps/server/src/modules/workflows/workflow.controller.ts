@@ -89,7 +89,7 @@ export class WorkflowController {
 
   async updateWorkflow(req: Request, res: Response) {
     try {
-      const { name, description, tags, workflowData, comment, thumbnailUrl } = req.body;
+      const { name, description, tags, workflowData, comment, thumbnailUrl, samplePrompts } = req.body;
       const workflow = await WorkflowModel.findById(req.params.id);
       if (!workflow) return res.status(404).json({ error: 'Workflow not found' });
 
@@ -97,6 +97,7 @@ export class WorkflowController {
       if (description !== undefined) workflow.description = description;
       if (tags) workflow.tags = tags;
       if (thumbnailUrl !== undefined) workflow.thumbnailUrl = thumbnailUrl;
+      if (samplePrompts !== undefined) workflow.samplePrompts = samplePrompts;
 
       if (workflowData) {
         const nextVersion = workflow.version + 1;
@@ -154,9 +155,13 @@ export class WorkflowController {
       if (!workflow) return res.status(404).json({ error: 'Workflow not found' });
 
       const runtime = await runtimeService.getActiveRuntime();
+      if (runtime.status === 'ready' && (!runtime.modelsAvailable || runtime.modelsAvailable.length === 0)) {
+        await runtimeService.checkHealth(runtime._id.toString());
+      }
       const deps = await dependencyService.resolveDependencies(
         workflow.workflowData,
-        runtime.customNodesInstalled || []
+        runtime.customNodesInstalled || [],
+        runtime.modelsAvailable || []
       );
 
       res.json(deps);
@@ -251,7 +256,7 @@ export class WorkflowController {
       if (!workflow) return res.status(404).json({ error: 'Workflow not found' });
 
       // Transform workflowData to prompt format if needed
-      let promptPayload = workflow.workflowData;
+      let promptPayload = JSON.parse(JSON.stringify(workflow.workflowData));
       // If UI format ({ nodes: [...] }), standard prompt queue requires prompt node dictionary
       if (promptPayload.nodes && Array.isArray(promptPayload.nodes)) {
         // UI format node conversion into API dictionary
@@ -265,17 +270,127 @@ export class WorkflowController {
         promptPayload = apiFormat;
       }
 
-      // Check runtime health
-      const runtime = await runtimeService.getActiveRuntime();
+      // Apply dynamic prompt, seed, steps, resolution overrides from req.body
+      const { prompt, negativePrompt, seed, steps, width, height, cfg } = req.body || {};
+      if (prompt !== undefined || negativePrompt !== undefined || seed !== undefined || steps !== undefined || width !== undefined || height !== undefined || cfg !== undefined) {
+        // Detect positive & negative node IDs from KSampler connections if available
+        let detectedPosNodeId: string | null = null;
+        let detectedNegNodeId: string | null = null;
+        for (const [, n] of Object.entries(promptPayload as Record<string, any>)) {
+          if (n.class_type === 'KSampler' || n.class_type === 'KSamplerAdvanced') {
+            if (Array.isArray(n.inputs?.positive)) detectedPosNodeId = String(n.inputs.positive[0]);
+            if (Array.isArray(n.inputs?.negative)) detectedNegNodeId = String(n.inputs.negative[0]);
+          }
+        }
+
+        for (const [nodeId, node] of Object.entries(promptPayload as Record<string, any>)) {
+          const classType = node.class_type;
+          const inputs = node.inputs;
+          if (!inputs) continue;
+
+          // 1. Text encode nodes (CLIPTextEncode or TextEncodeQwenImage21)
+          if (classType === 'TextEncodeQwenImage21') {
+            if (prompt !== undefined) inputs.prompt = prompt;
+            if (negativePrompt !== undefined) inputs.negative_prompt = negativePrompt;
+            if (width !== undefined) inputs.resolution = Math.max(width, height || width);
+          } else if (classType === 'CLIPTextEncode') {
+            const title = (node._meta?.title || '').toLowerCase();
+            if (nodeId === detectedNegNodeId || title.includes('negative')) {
+              if (negativePrompt !== undefined) inputs.text = negativePrompt;
+            } else if (nodeId === detectedPosNodeId || title.includes('positive') || !title.includes('negative')) {
+              if (prompt !== undefined) inputs.text = prompt;
+            }
+          }
+
+          // 2. KSampler nodes
+          if (classType === 'KSampler' || classType === 'KSamplerAdvanced') {
+            if (seed !== undefined) inputs.seed = seed;
+            if (steps !== undefined) inputs.steps = steps;
+            if (cfg !== undefined) inputs.cfg = cfg;
+          }
+
+          // 3. Latent image
+          if (classType === 'EmptyLatentImage') {
+            if (width !== undefined) inputs.width = width;
+            if (height !== undefined) inputs.height = height;
+          }
+        }
+      }
+
+      // Ensure SaveImage has unique filename_prefix per run so ComfyUI on Colab/Drive doesn't collide
+      const safeWf = (workflow.name || 'Studio').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 10);
+      const timeTag = Date.now().toString().slice(-6);
+      for (const [, node] of Object.entries(promptPayload as Record<string, any>)) {
+        if (node.class_type === 'SaveImage' || node.class_type === 'SaveImageAdvanced') {
+          if (node.inputs) {
+            node.inputs.filename_prefix = `Comfy_${safeWf}_${timeTag}`;
+          }
+        }
+      }
+
+      // Check runtime health & auto-reconnect
+      let runtime = await runtimeService.getActiveRuntime();
+      if (runtime.endpoint && runtime.endpoint.startsWith('http')) {
+        const cleanEndpoint = runtime.endpoint.replace(/\/+$/, '');
+        if (comfyUIService.getEndpoint() !== cleanEndpoint) {
+          comfyUIService.setEndpoint(cleanEndpoint);
+        }
+      }
+
+      if (runtime.status === 'offline') {
+        const health = await runtimeService.checkHealth(runtime._id.toString());
+        runtime = health.runtime;
+      }
+
       if (runtime.status === 'offline') {
         return res.status(400).json({
-          error: 'Runtime is offline. Please connect to Colab or local ComfyUI first.'
+          error: 'Runtime is offline. Please check Colab Cloudflare tunnel connection.'
         });
       }
 
       const queueResult = await comfyUIService.queuePrompt(promptPayload, {
         workflowId: workflow._id.toString()
       });
+
+      // Extract comprehensive parameters for display in Gallery & Inspector
+      let extractedPrompt = prompt || '';
+      let extractedNegPrompt = negativePrompt || '';
+      let extractedSeed = seed;
+      let extractedSteps = steps;
+      let extractedCfg = cfg;
+      let extractedWidth = width;
+      let extractedHeight = height;
+      let extractedModel = '';
+      let extractedSampler = '';
+      let extractedScheduler = '';
+
+      for (const [, node] of Object.entries(promptPayload as Record<string, any>)) {
+        if (node.class_type === 'UNETLoader' || node.class_type === 'CheckpointLoaderSimple') {
+          extractedModel = node.inputs?.unet_name || node.inputs?.ckpt_name || extractedModel;
+        }
+        if (node.class_type === 'TextEncodeQwenImage21') {
+          if (!extractedPrompt) extractedPrompt = node.inputs?.prompt || '';
+          if (!extractedNegPrompt) extractedNegPrompt = node.inputs?.negative_prompt || '';
+        } else if (node.class_type === 'CLIPTextEncode') {
+          const t = (node._meta?.title || '').toLowerCase();
+          if (t.includes('negative')) {
+            if (!extractedNegPrompt) extractedNegPrompt = node.inputs?.text || '';
+          } else {
+            if (!extractedPrompt) extractedPrompt = node.inputs?.text || '';
+          }
+        }
+        if (node.class_type === 'KSampler' || node.class_type === 'KSamplerAdvanced') {
+          if (extractedSeed === undefined) extractedSeed = node.inputs?.seed;
+          if (extractedSteps === undefined) extractedSteps = node.inputs?.steps;
+          if (extractedCfg === undefined) extractedCfg = node.inputs?.cfg;
+          extractedSampler = node.inputs?.sampler_name || extractedSampler;
+          extractedScheduler = node.inputs?.scheduler || extractedScheduler;
+        }
+        if (node.class_type === 'EmptyLatentImage') {
+          if (extractedWidth === undefined) extractedWidth = node.inputs?.width;
+          if (extractedHeight === undefined) extractedHeight = node.inputs?.height;
+        }
+      }
 
       const generation = await Generation.create({
         workflowId: workflow._id,
@@ -284,8 +399,21 @@ export class WorkflowController {
         promptId: queueResult.prompt_id,
         status: 'queued',
         inputs: promptPayload,
+        parameters: {
+          prompt: extractedPrompt,
+          negativePrompt: extractedNegPrompt,
+          seed: extractedSeed,
+          steps: extractedSteps,
+          cfg: extractedCfg,
+          samplerName: extractedSampler,
+          scheduler: extractedScheduler,
+          model: extractedModel,
+          width: extractedWidth,
+          height: extractedHeight
+        },
         outputs: []
       });
+
 
       res.json({
         promptId: queueResult.prompt_id,

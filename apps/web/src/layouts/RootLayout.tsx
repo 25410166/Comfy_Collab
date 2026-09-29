@@ -12,9 +12,11 @@ import {
   Settings,
   Sparkles,
   Activity,
-  HardDrive
+  HardDrive,
+  ExternalLink
 } from 'lucide-react';
 import { api } from '../api/client.js';
+
 import { useSocketEvent } from '../hooks/useSocket.js';
 import { RuntimeInfo } from '../types/index.js';
 
@@ -154,6 +156,19 @@ export function RootLayout() {
           </div>
 
           <div className="flex items-center gap-3">
+            {runtime?.endpoint && (
+              <a
+                href={runtime.endpoint}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-800/50 text-emerald-300 transition-colors flex items-center gap-1.5 shadow-sm"
+                title="Mở giao diện ComfyUI trên Google Colab để theo dõi trực tiếp node graph và tiến trình render"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>🖥️ ComfyUI Canvas (Live)</span>
+              </a>
+            )}
+
             <Link
               to="/workflows"
               className="px-3 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors flex items-center gap-1.5 shadow-sm"
@@ -162,6 +177,7 @@ export function RootLayout() {
               New Generation
             </Link>
           </div>
+
         </header>
 
         {/* Routed Page Container */}
