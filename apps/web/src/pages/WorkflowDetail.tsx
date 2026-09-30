@@ -569,14 +569,18 @@ export function WorkflowDetail() {
                   )}
 
                   {/* Completed Output Preview */}
-                  {activeGen.status === 'completed' && activeGen.outputs?.[0] && (
+                  {activeGen.status === 'completed' && activeGen.outputs && activeGen.outputs.length > 0 && (
                     <div className="pt-2 space-y-3 border-t border-white/[0.08]">
-                      <div className="relative aspect-square max-w-sm mx-auto rounded-xl overflow-hidden border border-white/[0.08] bg-black">
-                        <img
-                          src={activeGen.outputs[0].url}
-                          alt="Generated output"
-                          className="w-full h-full object-contain"
-                        />
+                      <div className={`grid gap-2 ${activeGen.outputs.length > 1 ? 'grid-cols-2 place-content-center' : 'grid-cols-1 max-w-sm mx-auto'}`}>
+                        {activeGen.outputs.map((out: any, idx: number) => (
+                          <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-white/[0.08] bg-black">
+                            <img
+                              src={out.url}
+                              alt={`Generated output ${idx + 1}`}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                        ))}
                       </div>
 
                       <div className="flex items-center justify-between text-[11px] text-zinc-400 px-1 font-mono">
