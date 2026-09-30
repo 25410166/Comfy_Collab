@@ -261,7 +261,7 @@ export function WorkflowDetail() {
             <button
               onClick={() => runMutation.mutate()}
               disabled={runMutation.isPending}
-              className="px-4 py-1.5 rounded-lg bg-[#0071e3] hover:bg-[#0077ed] active:bg-[#0062c4] disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+              className="px-4 py-1.5 rounded-lg bg-[#0D5CFF] hover:bg-[#0077ed] active:bg-[#0062c4] disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               <span>{runMutation.isPending ? 'Đang gửi...' : 'Chạy Workflow'}</span>
@@ -363,7 +363,7 @@ export function WorkflowDetail() {
                     seed: Math.floor(Math.random() * 1000000000)
                   })}
                   disabled={runMutation.isPending}
-                  className="px-4 py-2 rounded-lg bg-[#0071e3] hover:bg-[#0077ed] active:bg-[#0062c4] disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
+                  className="px-4 py-2 rounded-lg bg-[#0D5CFF] hover:bg-[#0077ed] active:bg-[#0062c4] disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" />
                   <span>{runMutation.isPending ? 'Đang gửi...' : 'Tạo ảnh ngay'}</span>
@@ -391,7 +391,7 @@ export function WorkflowDetail() {
                     type="button"
                     onClick={() => optimizeMutation.mutate({ prompt: promptInput, style: optimizerStyle })}
                     disabled={optimizeMutation.isPending || !promptInput.trim()}
-                    className="px-3.5 py-1.5 rounded-lg bg-[#0071e3] hover:bg-[#0077ed] active:bg-[#0062c4] disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm shrink-0"
+                    className="px-3.5 py-1.5 rounded-lg bg-[#0D5CFF] hover:bg-[#0077ed] active:bg-[#0062c4] disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm shrink-0"
                   >
                     <Wand2 className="w-3.5 h-3.5" />
                     <span>{optimizeMutation.isPending ? 'Đang phân tích...' : 'Tối ưu hóa Prompt'}</span>
@@ -484,7 +484,7 @@ export function WorkflowDetail() {
                   onChange={(e) => setPromptInput(e.target.value)}
                   rows={3}
                   placeholder="Nhập mô tả ảnh bằng tiếng Anh hoặc tiếng Việt rồi bấm Tối ưu hóa..."
-                  className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] focus:border-[#0071e3] focus:ring-1 focus:ring-[#0071e3] px-3.5 py-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none transition-all leading-relaxed"
+                  className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] focus:border-[#0D5CFF] focus:ring-1 focus:ring-[#0D5CFF] px-3.5 py-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none transition-all leading-relaxed"
                 />
               </div>
 
@@ -516,7 +516,7 @@ export function WorkflowDetail() {
                   value={negPromptInput}
                   onChange={(e) => setNegPromptInput(e.target.value)}
                   placeholder="ugly, blurry, distorted, low quality..."
-                  className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] focus:border-[#0071e3] focus:ring-1 focus:ring-[#0071e3] px-3.5 py-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none transition-all"
+                  className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] focus:border-[#0D5CFF] focus:ring-1 focus:ring-[#0D5CFF] px-3.5 py-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none transition-all"
                 />
               </div>
 
@@ -530,7 +530,7 @@ export function WorkflowDetail() {
                       setWidth(w);
                       setHeight(h);
                     }}
-                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0071e3] focus:ring-1 focus:ring-[#0071e3]"
+                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF] focus:ring-1 focus:ring-[#0D5CFF]"
                   >
                     <option value="768x768">768 x 768 (Khuyến nghị)</option>
                     <option value="1024x1024">1024 x 1024 (Chuẩn HD)</option>
@@ -547,7 +547,7 @@ export function WorkflowDetail() {
                     max={40}
                     value={steps}
                     onChange={(e) => setSteps(Number(e.target.value))}
-                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0071e3] focus:ring-1 focus:ring-[#0071e3]"
+                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF] focus:ring-1 focus:ring-[#0D5CFF]"
                   />
                 </div>
 
@@ -560,7 +560,7 @@ export function WorkflowDetail() {
                     max={10}
                     value={cfg}
                     onChange={(e) => setCfg(Number(e.target.value))}
-                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0071e3] focus:ring-1 focus:ring-[#0071e3]"
+                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF] focus:ring-1 focus:ring-[#0D5CFF]"
                   />
                 </div>
               </div>
@@ -573,7 +573,7 @@ export function WorkflowDetail() {
                   </div>
                   <Link
                     to="/outputs"
-                    className="px-2.5 py-1 rounded bg-[#0071e3] hover:bg-[#0077ed] text-white font-medium shrink-0"
+                    className="px-2.5 py-1 rounded bg-[#0D5CFF] hover:bg-[#0077ed] text-white font-medium shrink-0"
                   >
                     Xem Gallery →
                   </Link>
@@ -622,7 +622,7 @@ export function WorkflowDetail() {
                     <div className="space-y-1.5">
                       <div className="w-full bg-[#121214] rounded-full h-2 overflow-hidden border border-white/[0.08]">
                         <div
-                          className="bg-[#0071e3] h-full rounded-full transition-all duration-500 ease-out"
+                          className="bg-[#0D5CFF] h-full rounded-full transition-all duration-500 ease-out"
                           style={{ width: `${Math.max(5, activeGen.progress || 0)}%` }}
                         />
                       </div>
@@ -716,7 +716,7 @@ export function WorkflowDetail() {
                         <a
                           href={activeGen.outputs[0].url}
                           download={activeGen.outputs[0].filename}
-                          className="flex-1 py-2 rounded-lg bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                          className="flex-1 py-2 rounded-lg bg-[#0D5CFF] hover:bg-[#0077ed] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                         >
                           <Download className="w-3.5 h-3.5" /> Tải ảnh về máy
                         </a>
@@ -785,7 +785,7 @@ export function WorkflowDetail() {
                       <div className="flex-1 flex flex-col justify-between space-y-3">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <h4 className="text-xs font-bold text-white group-hover:text-indigo-400 transition-colors">
+                            <h4 className="text-xs font-bold text-white group-hover:text-[#93C5FD] transition-colors">
                               {preset.title}
                             </h4>
                             <button
@@ -800,7 +800,7 @@ export function WorkflowDetail() {
                                 if (preset.cfg) setCfg(preset.cfg);
                                 window.scrollTo({ top: 120, behavior: 'smooth' });
                               }}
-                              className="text-[11px] px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 font-semibold flex items-center gap-1.5 transition-colors"
+                              className="text-[11px] px-2.5 py-1 rounded-lg bg-[#0D5CFF]/20 hover:bg-[#0D5CFF]/40 text-[#93C5FD] font-semibold flex items-center gap-1.5 transition-colors"
                             >
                               <Sparkles className="w-3 h-3" />
                               Dùng mẫu này (Apply)
@@ -831,7 +831,7 @@ export function WorkflowDetail() {
                                 )}
                               </button>
                             </div>
-                            <p className="text-[11px] text-slate-300 font-mono line-clamp-2 selection:bg-indigo-500">
+                            <p className="text-[11px] text-slate-300 font-mono line-clamp-2 selection:bg-[#0D5CFF]">
                               {preset.positive}
                             </p>
                           </div>
@@ -915,7 +915,7 @@ export function WorkflowDetail() {
               </h3>
               <div className="flex flex-wrap gap-2">
                 {workflow.tags?.map((t) => (
-                  <span key={t} className="px-2.5 py-1 rounded-md bg-indigo-500/10 text-indigo-400 text-xs">
+                  <span key={t} className="px-2.5 py-1 rounded-md bg-[#0D5CFF]/10 text-[#93C5FD] text-xs">
                     #{t}
                   </span>
                 ))}
@@ -1014,7 +1014,7 @@ export function WorkflowDetail() {
                     setPromptSearch(e.target.value);
                     setPromptPage(1);
                   }}
-                  className="w-full bg-[#0f0f11] border border-white/[0.08] focus:border-[#0071e3] focus:ring-1 focus:ring-[#0071e3] rounded-xl pl-9 pr-3.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none transition-all"
+                  className="w-full bg-[#0f0f11] border border-white/[0.08] focus:border-[#0D5CFF] focus:ring-1 focus:ring-[#0D5CFF] rounded-xl pl-9 pr-3.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none transition-all"
                 />
               </div>
             </div>
@@ -1058,7 +1058,7 @@ export function WorkflowDetail() {
 
                       <button
                         onClick={() => applyPresetToRunner(preset)}
-                        className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold shrink-0 flex items-center gap-1 transition-all shadow-md shadow-indigo-600/20"
+                        className="px-3 py-1.5 rounded-lg bg-[#0D5CFF] hover:bg-[#246BFF] shadow-glow-electric text-white text-[11px] font-bold shrink-0 flex items-center gap-1 transition-all shadow-md shadow-[0_0_15px_rgba(13,92,255,0.3)]"
                       >
                         <span>Dùng ngay</span>
                         <ArrowRight className="w-3 h-3" />
@@ -1123,7 +1123,7 @@ export function WorkflowDetail() {
                   {/* Footer Meta */}
                   <div className="pt-2 border-t border-slate-800/70 flex items-center justify-between text-[10px] text-slate-500 font-mono">
                     <span>Khuyến nghị: {preset.width}x{preset.height} | Steps: {preset.steps}</span>
-                    <span className="text-indigo-400">CFG: {preset.cfg}</span>
+                    <span className="text-[#93C5FD]">CFG: {preset.cfg}</span>
                   </div>
                 </div>
               ))}
@@ -1148,7 +1148,7 @@ export function WorkflowDetail() {
                 <button
                   disabled={promptPage >= promptsData.totalPages}
                   onClick={() => setPromptPage((p) => p + 1)}
-                  className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-[#0D5CFF] hover:bg-[#246BFF] shadow-glow-electric disabled:opacity-40 text-white text-xs font-semibold transition-colors"
                 >
                   Trang sau
                 </button>
@@ -1187,7 +1187,7 @@ export function WorkflowDetail() {
 
                   <Link
                     to={`/models?search=${encodeURIComponent(m.name.replace(/\.[^/.]+$/, ''))}`}
-                    className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium flex items-center gap-1.5 transition-colors"
+                    className="px-3 py-1.5 rounded-lg bg-[#0D5CFF] hover:bg-[#246BFF] shadow-glow-electric text-white text-xs font-medium flex items-center gap-1.5 transition-colors"
                   >
                     <Search className="w-3.5 h-3.5" />
                     Search & Download

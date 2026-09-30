@@ -159,17 +159,16 @@ cells.append({
     "source": [line + "\n" for line in cell3_code.strip().split("\n")]
 })
 
-# Cell 3A: Step 3: Tải Bộ Model Siêu Tốc: SDXL Realistic, Realistic Vision V6.0, VAE, LoRA, ControlNet & Upscaler (Render 5s - 20s)
-cell_realistic_code = """#@title 3. Tải Bộ Model Siêu Tốc: SDXL Realistic, Realistic Vision V6.0, VAE, LoRA, ControlNet & Upscaler (Render 5s - 20s)
-#@markdown Tải trọn bộ model tiêu chuẩn vàng cho tạo ảnh người thật siêu thực (Photorealistic & High-Fashion):
-#@markdown - ⚡ **RealVisXL V4.0 (SDXL)**: `checkpoints/realvisxlV40_v40Bakedvae.safetensors` (~6.6 GB) - Tạo ảnh 8k siêu thực trong 15-20s.
-#@markdown - ⚡ **Realistic Vision V6.0/V5.1 (SD1.5)**: `checkpoints/realisticVisionV60B1_v51VAE.safetensors` (~2.1 GB) - Tạo ảnh người mẫu trong 5-8s.
-#@markdown - 🎛️ **SDXL VAE Fix**: `vae/sdxl_vae.safetensors` (~335 MB)
-#@markdown - 🔍 **4x-UltraSharp Upscaler**: `upscale_models/4x-UltraSharp.pth` (~67 MB) - Tăng độ phân giải lên 4k siêu nét.
-#@markdown - 🎨 **LoRA Add-Detail-XL**: `loras/add-detail-xl.safetensors` (~50 MB) - Tăng độ sắc nét của da, mắt, tóc.
-#@markdown - 🧍 **ControlNet OpenPose (SD1.5)**: `controlnet/control_v11p_sd15_openpose.pth` (~1.4 GB) - Định hình dáng đứng, tư thế người mẫu.
+# Cell 3A: Step 3: Tải Bộ Model Siêu Tốc: SDXL Lightning/Turbo + Realistic + VAE + LoRA + ControlNet + Upscaler
+cell_realistic_code = """#@title 3. Tải Bộ Model Siêu Tốc (Lightning 2s, Turbo 1s, Realistic 5-20s)
+#@markdown Tải trọn bộ model chuyên nghiệp cho tạo ảnh siêu nhanh và chất lượng cao:
+#@markdown - ⚡⚡ **SDXL Lightning 4-Step** (ByteDance): `checkpoints/sdxl_lightning_4step.safetensors` (~6.5 GB) - **Gen 1 ảnh chỉ 2 giây!**
+#@markdown - ⚡⚡ **SDXL Turbo** (Stability AI): `checkpoints/sd_xl_turbo_1.0_fp16.safetensors` (~3.3 GB) - **Gen 1 ảnh chỉ 1 giây!** (512x512)
+#@markdown - ⚡ **RealVisXL V4.0 (SDXL)**: `checkpoints/realvisxlV40_v40Bakedvae.safetensors` (~6.6 GB) - Chất lượng cao nhất 15-20s.
+#@markdown - ⚡ **Realistic Vision V6.0 (SD1.5)**: `checkpoints/realisticVisionV60B1_v51VAE.safetensors` (~2.1 GB) - 5-8s.
+#@markdown - 🎛️ **SDXL VAE Fix** + **4x-UltraSharp** + **LoRA Add-Detail-XL** + **ControlNet OpenPose**
 #@markdown
-#@markdown *Chỉ tải 1 lần vào Google Drive (`MyDrive/ComfyStudio/models`). Các lần sau mở Colab sẽ tự động nhận diện và bỏ qua không tải lại.*
+#@markdown *Chỉ tải 1 lần vào Google Drive. Các lần sau tự bỏ qua.*
 
 import os
 import sys
@@ -183,7 +182,23 @@ TARGET_BASE = DRIVE_DIR if has_drive else COMFY_DIR
 
 FAST_REALISTIC_MODELS = [
     {
-        "desc": "1. SDXL Realistic Checkpoint: RealVisXL V4.0 (Render 15-20s)",
+        "desc": "1. SDXL Lightning 4-Step (ByteDance) - Gen 2 giây!",
+        "repo_id": "ByteDance/SDXL-Lightning",
+        "category": "checkpoints",
+        "rel_path": "sdxl_lightning_4step.safetensors",
+        "basename": "sdxl_lightning_4step.safetensors",
+        "min_size_mb": 5000
+    },
+    {
+        "desc": "2. SDXL Turbo FP16 (Stability AI) - Gen 1 giây!",
+        "repo_id": "stabilityai/sdxl-turbo",
+        "category": "checkpoints",
+        "rel_path": "sd_xl_turbo_1.0_fp16.safetensors",
+        "basename": "sd_xl_turbo_1.0_fp16.safetensors",
+        "min_size_mb": 3000
+    },
+    {
+        "desc": "3. SDXL Realistic Checkpoint: RealVisXL V4.0 (Render 15-20s)",
         "repo_id": "SG161222/RealVisXL_V4.0",
         "category": "checkpoints",
         "rel_path": "RealVisXL_V4.0.safetensors",
@@ -191,7 +206,7 @@ FAST_REALISTIC_MODELS = [
         "min_size_mb": 5000
     },
     {
-        "desc": "2. SD1.5 Checkpoint: Realistic Vision V5.1/V6.0 (Render 5s)",
+        "desc": "4. SD1.5 Checkpoint: Realistic Vision V5.1/V6.0 (Render 5s)",
         "repo_id": "SG161222/Realistic_Vision_V5.1_noVAE",
         "category": "checkpoints",
         "rel_path": "Realistic_Vision_V5.1_fp16-no-ema.safetensors",
@@ -199,7 +214,7 @@ FAST_REALISTIC_MODELS = [
         "min_size_mb": 1800
     },
     {
-        "desc": "3. SDXL VAE (Khử mờ & cân chỉnh màu)",
+        "desc": "5. SDXL VAE (Khử mờ & cân chỉnh màu)",
         "repo_id": "stabilityai/sdxl-vae",
         "category": "vae",
         "rel_path": "sdxl_vae.safetensors",
@@ -207,7 +222,7 @@ FAST_REALISTIC_MODELS = [
         "min_size_mb": 200
     },
     {
-        "desc": "4. AI Upscaler 4x-UltraSharp (Nâng nét ảnh 4k)",
+        "desc": "6. AI Upscaler 4x-UltraSharp (Nâng nét ảnh 4k)",
         "repo_id": "lokcx/4x-Ultrasharp",
         "category": "upscale_models",
         "rel_path": "4x-UltraSharp.pth",
@@ -215,7 +230,7 @@ FAST_REALISTIC_MODELS = [
         "min_size_mb": 50
     },
     {
-        "desc": "5. LoRA Add-Detail-XL (Tăng chi tiết da, mắt, tóc)",
+        "desc": "7. LoRA Add-Detail-XL (Tăng chi tiết da, mắt, tóc)",
         "repo_id": "OedoSoldier/detail-tweaker-lora",
         "category": "loras",
         "rel_path": "add-detail-xl.safetensors",
@@ -223,7 +238,7 @@ FAST_REALISTIC_MODELS = [
         "min_size_mb": 30
     },
     {
-        "desc": "6. ControlNet OpenPose (Kiểm soát dáng người mẫu)",
+        "desc": "8. ControlNet OpenPose (Kiểm soát dáng người mẫu)",
         "repo_id": "lllyasviel/ControlNet-v1-1",
         "category": "controlnet",
         "rel_path": "control_v11p_sd15_openpose.pth",

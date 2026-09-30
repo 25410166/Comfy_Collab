@@ -13,7 +13,10 @@ import {
   ArrowRight,
   Cloud,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Sparkles,
+  Layers,
+  Cpu
 } from 'lucide-react';
 import { api } from '../api/client.js';
 import { Workflow } from '../types/index.js';
@@ -23,7 +26,6 @@ export function Workflows() {
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [isImportOpen, setIsImportOpen] = useState(false);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // Import form state
   const [importName, setImportName] = useState('');
@@ -84,23 +86,28 @@ export function Workflows() {
   );
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-7 max-w-7xl mx-auto">
       {/* Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Workflows</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-white tracking-tight">Workflows Matrix</h2>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#0D5CFF]/15 text-[#93C5FD] border border-[#0D5CFF]/30">
+              {workflows.length} Loaded
+            </span>
+          </div>
           <p className="text-slate-400 text-xs mt-1">
-            Store, manage, version and inspect dependencies for ComfyUI workflows.
+            Production pipelines optimized for SDXL, Realistic Vision, LoRA, and ControlNet.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={() => setIsImportOpen(true)}
-            className="px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-2 transition-colors shadow-sm"
+            className="electric-btn px-4 py-2 rounded-xl text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-glow-electric"
           >
             <Upload className="w-3.5 h-3.5" />
-            Import JSON
+            <span>Import JSON</span>
           </button>
         </div>
       </div>
@@ -111,34 +118,34 @@ export function Workflows() {
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             type="text"
-            placeholder="Search workflows by name or description..."
+            placeholder="Search workflows by name, tags, or engine..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#111827] border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full bg-[#080D1A]/90 border border-[#1E293B] rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-[#0D5CFF] focus:ring-1 focus:ring-[#0D5CFF]/50 transition-all"
           />
         </div>
 
         {/* Tag filter pills */}
         {allTags.length > 0 && (
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-xl">
             <button
               onClick={() => setSelectedTag(null)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
                 selectedTag === null
-                  ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
-                  : 'bg-[#111827] border border-slate-800 text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#0D5CFF]/20 text-[#93C5FD] border border-[#0D5CFF]/40 shadow-[0_0_12px_rgba(13,92,255,0.25)]'
+                  : 'bg-[#0B1120] border border-[#1E293B] text-slate-400 hover:text-slate-200 hover:border-[#1E293B]/80'
               }`}
             >
-              All Tags
+              All Pipelines
             </button>
             {allTags.map((tag) => (
               <button
                 key={tag}
                 onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
                   selectedTag === tag
-                    ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
-                    : 'bg-[#111827] border border-slate-800 text-slate-400 hover:text-slate-200'
+                    ? 'bg-[#0D5CFF]/20 text-[#93C5FD] border border-[#0D5CFF]/40 shadow-[0_0_12px_rgba(13,92,255,0.25)]'
+                    : 'bg-[#0B1120] border border-[#1E293B] text-slate-400 hover:text-slate-200'
                 }`}
               >
                 #{tag}
@@ -150,9 +157,12 @@ export function Workflows() {
 
       {/* Workflow Grid */}
       {isLoading ? (
-        <div className="p-12 text-center text-xs text-slate-500">Loading workflows...</div>
+        <div className="p-16 text-center text-xs text-slate-500 flex flex-col items-center gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-[#0D5CFF] border-t-transparent animate-spin" />
+          <span>Synchronizing workflows from local MongoDB...</span>
+        </div>
       ) : workflows.length === 0 ? (
-        <div className="bg-[#111827] border border-slate-800 rounded-2xl p-12 text-center max-w-md mx-auto">
+        <div className="glass-card rounded-2xl p-12 text-center max-w-md mx-auto border border-[#1E293B]">
           <FolderGit2 className="w-12 h-12 text-slate-600 mx-auto mb-3" />
           <h3 className="font-semibold text-sm text-slate-200">No workflows found</h3>
           <p className="text-xs text-slate-400 mt-1 mb-5">
@@ -160,7 +170,7 @@ export function Workflows() {
           </p>
           <button
             onClick={() => setIsImportOpen(true)}
-            className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium inline-flex items-center gap-2"
+            className="electric-btn px-4 py-2 rounded-xl text-white text-xs font-medium inline-flex items-center gap-2"
           >
             <Upload className="w-4 h-4" /> Import Workflow
           </button>
@@ -170,20 +180,25 @@ export function Workflows() {
           {workflows.map((wf) => (
             <div
               key={wf._id}
-              className="bg-[#111827] border border-slate-800 hover:border-slate-700 rounded-xl p-5 flex flex-col justify-between transition-all group overflow-hidden"
+              className="glass-card rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 group hover:border-[#0D5CFF]/50 hover:shadow-glow-electric relative overflow-hidden"
             >
+              {/* Subtle top ambient rim light */}
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#0D5CFF]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
               <div>
                 {wf.thumbnailUrl && (
-                  <div className="w-full h-36 rounded-lg overflow-hidden mb-3 bg-slate-950 border border-slate-800 relative">
+                  <div className="w-full h-40 rounded-xl overflow-hidden mb-3.5 bg-black/60 border border-[#1E293B] relative group">
                     <img
                       src={wf.thumbnailUrl}
                       alt={wf.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
                     {wf.samplePrompts && wf.samplePrompts.length > 0 && (
-                      <span className="absolute bottom-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/75 backdrop-blur-sm text-indigo-300 border border-indigo-500/30">
-                        ✨ {wf.samplePrompts.length} Presets
+                      <span className="absolute bottom-2.5 right-2.5 text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-[#050811]/85 backdrop-blur-md text-[#93C5FD] border border-[#0D5CFF]/40 shadow-sm flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-[#00F0FF]" />
+                        <span>{wf.samplePrompts.length} Presets</span>
                       </span>
                     )}
                   </div>
@@ -192,56 +207,56 @@ export function Workflows() {
                 <div className="flex items-start justify-between gap-2">
                   <Link
                     to={`/workflows/${wf._id}`}
-                    className="font-semibold text-sm text-slate-100 hover:text-indigo-400 line-clamp-1 transition-colors"
+                    className="font-semibold text-sm text-slate-100 hover:text-[#93C5FD] line-clamp-1 transition-colors"
                   >
                     {wf.name}
                   </Link>
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">
+                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#080D1A] text-slate-400 font-mono border border-[#1E293B]">
                     v{wf.version}
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-400 mt-1.5 line-clamp-2 min-h-[32px]">
+                <p className="text-xs text-slate-400 mt-1.5 line-clamp-2 min-h-[32px] leading-relaxed">
                   {wf.description || 'No description provided.'}
                 </p>
 
                 {/* Tags */}
-                <div className="flex flex-wrap gap-1.5 mt-3">
+                <div className="flex flex-wrap gap-1.5 mt-3.5">
                   {wf.tags?.map((t) => (
-                    <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400">
+                    <span key={t} className="text-[10px] px-2 py-0.5 rounded-lg bg-[#0D5CFF]/10 text-[#93C5FD] border border-[#0D5CFF]/20">
                       #{t}
                     </span>
                   ))}
                 </div>
 
                 {/* Dependencies badge */}
-                <div className="mt-4 flex items-center gap-3 text-[11px] text-slate-400 border-t border-slate-800/80 pt-3">
-                  <span className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
-                    {wf.models?.length || 0} Models
+                <div className="mt-4 flex items-center gap-4 text-[11px] text-slate-400 border-t border-[#1E293B]/80 pt-3">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] shadow-[0_0_6px_rgba(0,240,255,0.6)]" />
+                    <span>{wf.models?.length || 0} Models</span>
                   </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                    {wf.customNodes?.length || 0} Custom Nodes
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" />
+                    <span>{wf.customNodes?.length || 0} Nodes</span>
                   </span>
                 </div>
               </div>
 
               {/* Card Footer Actions */}
-              <div className="mt-5 pt-3 border-t border-slate-800 flex items-center justify-between">
-                <span className="text-[11px] text-slate-500 flex items-center gap-1">
-                  <Cloud className="w-3.5 h-3.5 text-slate-600" />
+              <div className="mt-5 pt-3.5 border-t border-[#1E293B] flex items-center justify-between">
+                <span className="text-[11px] text-slate-500 flex items-center gap-1.5 font-mono">
+                  <Cloud className="w-3.5 h-3.5 text-[#0D5CFF]" />
                   <span className="capitalize">{wf.sync?.status || 'local'}</span>
                 </span>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => {
                       if (confirm(`Delete workflow "${wf.name}"?`)) {
                         deleteMutation.mutate(wf._id);
                       }
                     }}
-                    className="p-1.5 rounded hover:bg-slate-800 text-slate-500 hover:text-rose-400 transition-colors"
+                    className="p-2 rounded-lg hover:bg-rose-950/40 text-slate-500 hover:text-rose-400 transition-colors"
                     title="Delete workflow"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -250,7 +265,7 @@ export function Workflows() {
                   <a
                     href={`/api/workflows/${wf._id}/export`}
                     download
-                    className="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+                    className="p-2 rounded-lg hover:bg-[#0B1120] text-slate-400 hover:text-slate-200 transition-colors"
                     title="Export JSON"
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -258,9 +273,10 @@ export function Workflows() {
 
                   <Link
                     to={`/workflows/${wf._id}`}
-                    className="px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 text-xs font-semibold flex items-center gap-1 transition-colors"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#0D5CFF]/15 hover:bg-[#0D5CFF]/25 border border-[#0D5CFF]/30 text-[#93C5FD] text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
                   >
-                    Open <ArrowRight className="w-3.5 h-3.5" />
+                    <span>Launch</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </div>
@@ -271,29 +287,32 @@ export function Workflows() {
 
       {/* Import Modal */}
       {isImportOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#111827] border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-white">Import Workflow</h3>
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="glass-surface border border-[#1E293B] rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#1E293B] pb-3">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Upload className="w-4 h-4 text-[#0D5CFF]" />
+                <span>Import Workflow</span>
+              </h3>
               <button
                 onClick={() => setIsImportOpen(false)}
-                className="text-slate-500 hover:text-slate-300 text-xs"
+                className="text-slate-500 hover:text-slate-300 text-xs p-1"
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               <div>
                 <label className="text-xs font-medium text-slate-400 block mb-1">
                   Workflow Name (Optional)
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Anime Character XL"
+                  placeholder="e.g. SDXL Ultra Realistic Studio"
                   value={importName}
                   onChange={(e) => setImportName(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[#080D1A] border border-[#1E293B] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#0D5CFF] focus:ring-1 focus:ring-[#0D5CFF]/50"
                 />
               </div>
 
@@ -307,7 +326,7 @@ export function Workflows() {
                   onChange={(e) => {
                     if (e.target.files?.[0]) setFileToUpload(e.target.files[0]);
                   }}
-                  className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700"
+                  className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#0D5CFF]/15 file:text-[#93C5FD] file:border file:border-[#0D5CFF]/30 hover:file:bg-[#0D5CFF]/25 cursor-pointer"
                 />
               </div>
 
@@ -320,22 +339,22 @@ export function Workflows() {
                   placeholder='{"nodes": [...], ...}'
                   value={importJsonText}
                   onChange={(e) => setImportJsonText(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs font-mono text-slate-300 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[#080D1A] border border-[#1E293B] rounded-xl p-3 text-xs font-mono text-slate-300 focus:outline-none focus:border-[#0D5CFF] focus:ring-1 focus:ring-[#0D5CFF]/50"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
                 onClick={() => setIsImportOpen(false)}
-                className="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium"
+                className="px-4 py-2 rounded-xl bg-[#0B1120] hover:bg-[#0F172A] border border-[#1E293B] text-slate-300 text-xs font-medium transition-colors"
               >
                 Cancel
               </button>
               <button
                 disabled={(!fileToUpload && !importJsonText) || importMutation.isPending}
                 onClick={() => importMutation.mutate()}
-                className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-medium"
+                className="electric-btn px-4 py-2 rounded-xl text-white text-xs font-semibold disabled:opacity-50 transition-all shadow-glow-electric"
               >
                 {importMutation.isPending ? 'Importing...' : 'Save & Import'}
               </button>

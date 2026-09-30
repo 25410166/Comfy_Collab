@@ -84,7 +84,7 @@ export function DriveSync() {
             <button
               onClick={() => syncMutation.mutate()}
               disabled={syncMutation.isPending}
-              className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-2 transition-colors shadow-sm"
+              className="px-4 py-2 rounded-lg bg-[#0D5CFF] hover:bg-[#246BFF] shadow-glow-electric text-white text-xs font-semibold flex items-center gap-2 transition-colors shadow-sm"
             >
               <RotateCw className={`w-3.5 h-3.5 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
               {syncMutation.isPending ? 'Syncing...' : 'Sync All Workflows'}

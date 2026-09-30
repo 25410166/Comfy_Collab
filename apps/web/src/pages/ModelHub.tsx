@@ -138,7 +138,7 @@ export function ModelHub() {
               onClick={() => setSource(tab.key as any)}
               className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex-1 md:flex-none ${
                 source === tab.key
-                  ? 'bg-indigo-600 text-white shadow-sm'
+                  ? 'bg-[#0D5CFF] text-white shadow-sm'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
               }`}
             >
@@ -161,7 +161,7 @@ export function ModelHub() {
             }
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-[#0D5CFF]"
           />
         </div>
       </div>
@@ -175,7 +175,7 @@ export function ModelHub() {
               onClick={() => setCategory(cat)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
                 category === cat
-                  ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
+                  ? 'bg-[#0D5CFF]/20 text-[#93C5FD] border border-[#0D5CFF]/30'
                   : 'bg-[#111827] border border-slate-800 text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -291,7 +291,7 @@ export function ModelHub() {
                             alert('No direct download files found.');
                           }
                         }}
-                        className="w-full py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium flex items-center justify-center gap-2 transition-colors"
+                        className="w-full py-2 rounded-lg bg-[#0D5CFF] hover:bg-[#246BFF] shadow-glow-electric text-white text-xs font-medium flex items-center justify-center gap-2 transition-colors"
                       >
                         <Download className="w-3.5 h-3.5" /> Download Model
                       </button>
@@ -336,7 +336,7 @@ export function ModelHub() {
                                 destination: 'local'
                               });
                             }}
-                            className="px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-[11px] text-white font-medium"
+                            className="px-2 py-1 rounded bg-[#0D5CFF] hover:bg-[#246BFF] shadow-glow-electric text-[11px] text-white font-medium"
                           >
                             Get
                           </button>
@@ -359,7 +359,7 @@ export function ModelHub() {
 
             <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs space-y-1">
               <div className="text-slate-400">File:</div>
-              <div className="font-mono text-indigo-400 truncate">
+              <div className="font-mono text-[#93C5FD] truncate">
                 {downloadModal.selectedFile.filename}
               </div>
             </div>
@@ -376,11 +376,11 @@ export function ModelHub() {
                   }
                   className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
                     downloadModal.destination === 'local'
-                      ? 'border-indigo-500 bg-indigo-600/10 text-white'
+                      ? 'border-[#0D5CFF] bg-[#0D5CFF]/10 text-white'
                       : 'border-slate-800 bg-slate-900/50 text-slate-400'
                   }`}
                 >
-                  <HardDrive className="w-4 h-4 mb-2 text-indigo-400" />
+                  <HardDrive className="w-4 h-4 mb-2 text-[#93C5FD]" />
                   <span className="text-xs font-semibold">Local Storage</span>
                   <span className="text-[10px] text-slate-500">data/models/</span>
                 </button>
@@ -392,7 +392,7 @@ export function ModelHub() {
                   }
                   className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
                     downloadModal.destination === 'drive'
-                      ? 'border-indigo-500 bg-indigo-600/10 text-white'
+                      ? 'border-[#0D5CFF] bg-[#0D5CFF]/10 text-white'
                       : 'border-slate-800 bg-slate-900/50 text-slate-400'
                   }`}
                 >
@@ -424,7 +424,7 @@ export function ModelHub() {
                     destination: downloadModal.destination
                   });
                 }}
-                className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium"
+                className="px-4 py-2 rounded-lg bg-[#0D5CFF] hover:bg-[#246BFF] shadow-glow-electric text-white text-xs font-medium"
               >
                 {downloadMutation.isPending ? 'Starting...' : 'Start Download'}
               </button>

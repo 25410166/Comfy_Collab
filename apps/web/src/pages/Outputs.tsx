@@ -151,8 +151,8 @@ export function Outputs() {
                 onClick={() => setSelectedGen(gen)}
                 className={`group relative aspect-square bg-[#111827] border rounded-xl overflow-hidden cursor-pointer transition-all shadow-sm ${
                   isProcessing
-                    ? 'border-indigo-500/60 ring-1 ring-indigo-500/40 shadow-lg shadow-indigo-500/10'
-                    : 'border-slate-800 hover:border-indigo-500/50 hover:shadow-md'
+                    ? 'border-[#0D5CFF]/60 ring-1 ring-[#0D5CFF]/40 shadow-lg shadow-glow-electric'
+                    : 'border-slate-800 hover:border-[#0D5CFF]/50 hover:shadow-md'
                 }`}
               >
                 {firstOutput ? (
@@ -172,19 +172,19 @@ export function Outputs() {
                     />
                   )
                 ) : isProcessing ? (
-                  <div className="w-full h-full p-4 flex flex-col justify-between bg-gradient-to-b from-indigo-950/40 to-slate-950/80">
+                  <div className="w-full h-full p-4 flex flex-col justify-between bg-gradient-to-b from-[#0D5CFF]/20 to-[#050811]/90">
                     <div className="flex items-center justify-between">
                       <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                         gen.status === 'executing'
                           ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                          : 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
+                          : 'bg-[#0D5CFF]/15 text-[#93C5FD] border border-[#0D5CFF]/30'
                       }`}>
                         <span className="w-1.5 h-1.5 rounded-full bg-current animate-ping" />
                         {gen.status === 'executing' ? 'Đang tạo...' : 'Hàng đợi GPU'}
                       </span>
                       
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-mono font-bold text-indigo-300">
+                        <span className="text-xs font-mono font-bold text-[#BFDBFE]">
                           {gen.progress || 0}%
                         </span>
                         <button
@@ -204,7 +204,7 @@ export function Outputs() {
                     </div>
 
                     <div className="my-auto text-center space-y-2">
-                      <div className="w-10 h-10 mx-auto rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                      <div className="w-10 h-10 mx-auto rounded-full bg-[#0D5CFF]/10 border border-[#0D5CFF]/30 flex items-center justify-center text-[#93C5FD]">
                         <Sparkles className="w-5 h-5 animate-spin" style={{ animationDuration: '4s' }} />
                       </div>
                       <p className="text-[11px] font-medium text-slate-200 line-clamp-1">
@@ -219,7 +219,7 @@ export function Outputs() {
                     <div className="space-y-1">
                       <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden border border-slate-700/50">
                         <div
-                          className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-full rounded-full transition-all duration-500 ease-out"
+                          className="bg-gradient-to-r from-[#0D5CFF] via-[#00F0FF] to-[#38BDF8] h-full rounded-full transition-all duration-500 ease-out"
                           style={{ width: `${Math.max(5, gen.progress || 0)}%` }}
                         />
                       </div>
@@ -310,7 +310,7 @@ export function Outputs() {
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
                           : selectedGen.status === 'failed'
                           ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
-                          : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/30'
+                          : 'bg-[#0D5CFF]/10 text-[#93C5FD] border border-[#0D5CFF]/30'
                       }`}>
                         {selectedGen.status}
                       </span>
@@ -333,13 +333,13 @@ export function Outputs() {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                      <Sparkles className="w-3.5 h-3.5 text-[#93C5FD]" />
                       Positive Prompt
                     </span>
                     {selectedGen.parameters?.prompt && (
                       <button
                         onClick={() => copyToClipboard(selectedGen.parameters.prompt || '', 'pos')}
-                        className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium transition-colors"
+                        className="text-[11px] text-[#93C5FD] hover:text-[#BFDBFE] flex items-center gap-1 font-medium transition-colors"
                       >
                         {copiedField === 'pos' ? (
                           <>
@@ -393,7 +393,7 @@ export function Outputs() {
                 {/* Setup Parameters Grid */}
                 <div className="space-y-2 pt-2 border-t border-slate-800">
                   <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                    <Settings2 className="w-3.5 h-3.5 text-indigo-400" />
+                    <Settings2 className="w-3.5 h-3.5 text-[#93C5FD]" />
                     Thông Số Cấu Hình (Setup Parameters)
                   </span>
 
@@ -435,7 +435,7 @@ export function Outputs() {
 
                     <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800/80 col-span-2">
                       <span className="text-slate-500 block text-[10px]">Mô hình (Model / UNET)</span>
-                      <span className="text-indigo-300 font-mono text-[10px] truncate block" title={selectedGen.parameters?.model || 'qwen_image_2.1_int8_convrot.safetensors'}>
+                      <span className="text-[#BFDBFE] font-mono text-[10px] truncate block" title={selectedGen.parameters?.model || 'qwen_image_2.1_int8_convrot.safetensors'}>
                         {selectedGen.parameters?.model || 'qwen_image_2.1_int8_convrot.safetensors'}
                       </span>
                     </div>
@@ -464,7 +464,7 @@ export function Outputs() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => rerunMutation.mutate(selectedGen._id)}
-                    className="flex-1 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                    className="flex-1 py-2 rounded-lg bg-[#0D5CFF] hover:bg-[#246BFF] shadow-glow-electric text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" /> Chạy lại (Re-run)
                   </button>

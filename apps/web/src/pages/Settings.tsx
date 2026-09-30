@@ -42,7 +42,7 @@ export function Settings() {
         {/* Runtime Connection Settings */}
         <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6 space-y-4">
           <div className="flex items-center gap-2 text-white font-bold text-sm">
-            <Cpu className="w-4 h-4 text-indigo-400" />
+            <Cpu className="w-4 h-4 text-[#93C5FD]" />
             <span>ComfyUI Runtime Connection</span>
           </div>
 
@@ -55,7 +55,7 @@ export function Settings() {
               value={comfyEndpoint}
               onChange={(e) => setComfyEndpoint(e.target.value)}
               placeholder="http://127.0.0.1:8188"
-              className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3.5 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3.5 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-[#0D5CFF]"
             />
           </div>
         </div>
@@ -77,7 +77,7 @@ export function Settings() {
                 value={civitaiToken}
                 onChange={(e) => setCivitaiToken(e.target.value)}
                 placeholder="Civitai API Token..."
-                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3.5 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3.5 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-[#0D5CFF]"
               />
             </div>
 
@@ -90,7 +90,7 @@ export function Settings() {
                 value={hfToken}
                 onChange={(e) => setHfToken(e.target.value)}
                 placeholder="hf_..."
-                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3.5 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3.5 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-[#0D5CFF]"
               />
             </div>
           </div>
@@ -127,7 +127,7 @@ export function Settings() {
               saveMutation.mutate(payload);
             }}
             disabled={saveMutation.isPending}
-            className="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-2 transition-colors shadow-sm"
+            className="px-5 py-2 rounded-lg bg-[#0D5CFF] hover:bg-[#246BFF] shadow-glow-electric text-white text-xs font-semibold flex items-center gap-2 transition-colors shadow-sm"
           >
             <Save className="w-4 h-4" />
             {saveMutation.isPending ? 'Saving...' : 'Save Settings'}

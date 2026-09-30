@@ -104,7 +104,7 @@ export function Downloads() {
             onClick={() => setFilter(st)}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${
               filter === st
-                ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
+                ? 'bg-[#0D5CFF]/20 text-[#93C5FD] border border-[#0D5CFF]/30'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -146,7 +146,7 @@ export function Downloads() {
                         </>
                       ) : (
                         <>
-                          <HardDrive className="w-3.5 h-3.5 text-indigo-400" /> Local
+                          <HardDrive className="w-3.5 h-3.5 text-[#93C5FD]" /> Local
                         </>
                       )}
                     </span>
@@ -203,7 +203,7 @@ export function Downloads() {
                         ? 'bg-emerald-500'
                         : job.status === 'failed'
                         ? 'bg-rose-500'
-                        : 'bg-indigo-500'
+                        : 'bg-[#0D5CFF]'
                     }`}
                     style={{ width: `${job.progress}%` }}
                   />

@@ -132,12 +132,12 @@ export function Runtime() {
               placeholder="e.g. https://your-tunnel.trycloudflare.com or http://127.0.0.1:8188"
               value={endpointInput}
               onChange={(e) => setEndpointInput(e.target.value)}
-              className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3.5 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500"
+              className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3.5 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-[#0D5CFF]"
             />
             <button
               onClick={() => connectMutation.mutate(endpointInput)}
               disabled={connectMutation.isPending}
-              className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold shrink-0 transition-colors"
+              className="px-4 py-2 rounded-lg bg-[#0D5CFF] hover:bg-[#246BFF] shadow-glow-electric disabled:opacity-50 text-white text-xs font-semibold shrink-0 transition-colors"
             >
               {connectMutation.isPending ? 'Connecting...' : 'Connect'}
             </button>
@@ -177,14 +177,14 @@ export function Runtime() {
       <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Cloud className="w-5 h-5 text-indigo-400" />
+            <Cloud className="w-5 h-5 text-[#93C5FD]" />
             <h3 className="font-bold text-sm text-white">Google Colab Quickstart</h3>
           </div>
           <a
             href="https://colab.research.google.com"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300"
+            className="inline-flex items-center gap-1.5 text-xs text-[#93C5FD] hover:text-[#BFDBFE]"
           >
             Open Colab <ExternalLink className="w-3.5 h-3.5" />
           </a>
@@ -192,7 +192,7 @@ export function Runtime() {
 
         <ol className="list-decimal list-inside space-y-2 text-xs text-slate-300 leading-relaxed">
           <li>
-            Upload and open <span className="font-mono text-indigo-300">colab/ComfyStudio.ipynb</span> in Google Colab.
+            Upload and open <span className="font-mono text-[#BFDBFE]">colab/ComfyStudio.ipynb</span> in Google Colab.
           </li>
           <li>
             Run Cell 1 to mount Google Drive (<span className="font-mono text-slate-400">MyDrive/ComfyStudio</span>).

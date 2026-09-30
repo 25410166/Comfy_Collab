@@ -41,9 +41,9 @@ export function Dashboard() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-950/60 via-slate-900 to-slate-900 border border-indigo-900/40 p-8 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#080D1A] via-[#050811] to-[#050811] border border-[#0D5CFF]/30 p-8 shadow-xl">
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0D5CFF]/10 border border-[#0D5CFF]/30 text-[#93C5FD] text-xs font-semibold mb-4">
             <Sparkles className="w-3.5 h-3.5" />
             AI Workstation Architecture
           </div>
@@ -72,7 +72,7 @@ export function Dashboard() {
               {runtime?.gpu?.name ? `${runtime.gpu.name} (${runtime.gpu.vram} GB)` : 'Connect to Colab or Local GPU'}
             </div>
           </div>
-          <Link to="/runtime" className="mt-4 text-xs font-medium text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
+          <Link to="/runtime" className="mt-4 text-xs font-medium text-[#93C5FD] hover:text-[#BFDBFE] flex items-center gap-1">
             Configure Runtime <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -81,7 +81,7 @@ export function Dashboard() {
         <div className="bg-[#111827] border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-400">Saved Workflows</span>
-            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+            <div className="p-2 rounded-lg bg-[#0D5CFF]/10 text-[#93C5FD]">
               <FolderGit2 className="w-5 h-5" />
             </div>
           </div>
@@ -89,7 +89,7 @@ export function Dashboard() {
             <div className="text-2xl font-bold text-white">{workflows.length}</div>
             <div className="text-xs text-slate-400 mt-1">Versioned & saved in local DB</div>
           </div>
-          <Link to="/workflows" className="mt-4 text-xs font-medium text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
+          <Link to="/workflows" className="mt-4 text-xs font-medium text-[#93C5FD] hover:text-[#BFDBFE] flex items-center gap-1">
             View Workflows <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -133,7 +133,7 @@ export function Dashboard() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-white">Quick Workflows</h3>
-          <Link to="/workflows" className="text-xs text-indigo-400 hover:underline">
+          <Link to="/workflows" className="text-xs text-[#93C5FD] hover:underline">
             View All ({workflows.length})
           </Link>
         </div>
@@ -144,7 +144,7 @@ export function Dashboard() {
             <p className="text-sm text-slate-400 mb-4">No workflows imported yet.</p>
             <Link
               to="/workflows"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0D5CFF] hover:bg-[#246BFF] shadow-glow-electric text-white text-xs font-medium transition-colors"
             >
               Import Workflow
             </Link>
@@ -168,7 +168,7 @@ export function Dashboard() {
                   </p>
                   <div className="flex flex-wrap gap-1.5 mt-3">
                     {wf.tags?.slice(0, 3).map((t) => (
-                      <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400">
+                      <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#0D5CFF]/10 text-[#93C5FD]">
                         #{t}
                       </span>
                     ))}
@@ -181,7 +181,7 @@ export function Dashboard() {
                   </span>
                   <Link
                     to={`/workflows/${wf._id}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 text-xs font-medium transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0D5CFF]/20 hover:bg-[#0D5CFF]/30 text-[#93C5FD] text-xs font-medium transition-colors"
                   >
                     Open & Run <ArrowRight className="w-3 h-3" />
                   </Link>
@@ -196,7 +196,7 @@ export function Dashboard() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-white">Recent Outputs</h3>
-          <Link to="/outputs" className="text-xs text-indigo-400 hover:underline">
+          <Link to="/outputs" className="text-xs text-[#93C5FD] hover:underline">
             View All ({generationsData?.total || 0})
           </Link>
         </div>
@@ -212,7 +212,7 @@ export function Dashboard() {
               return (
                 <div
                   key={gen._id}
-                  className="group relative aspect-square bg-slate-900 rounded-lg overflow-hidden border border-slate-800 hover:border-indigo-500/50 transition-colors"
+                  className="group relative aspect-square bg-slate-900 rounded-lg overflow-hidden border border-slate-800 hover:border-[#0D5CFF]/50 transition-colors"
                 >
                   {output ? (
                     <img
