@@ -26,6 +26,7 @@ export interface IGeneration extends Document {
     samplerName?: string;
     scheduler?: string;
     model?: string;
+    loras?: Array<{ name: string; strength: number }>;
     width?: number;
     height?: number;
   };
@@ -66,6 +67,7 @@ const GenerationSchema = new Schema<IGeneration>(
       samplerName: { type: String, default: '' },
       scheduler: { type: String, default: '' },
       model: { type: String, default: '' },
+      loras: [{ name: { type: String }, strength: { type: Number, default: 1.0 } }],
       width: { type: Number },
       height: { type: Number }
     },

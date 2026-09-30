@@ -31,7 +31,10 @@ import {
   Layers,
   Cpu,
   Library,
-  Sliders
+  Sliders,
+  Plus,
+  Trash2,
+  Zap
 } from 'lucide-react';
 import { api } from '../api/client.js';
 import { Workflow, DependencyResult, PromptPreset, RuntimeInfo } from '../types/index.js';
@@ -55,6 +58,78 @@ export function WorkflowDetail() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [activePromptId, setActivePromptId] = useState<string | null>(null);
 
+  // Model, LoRA & Advanced Sampler controls
+  const [selectedModel, setSelectedModel] = useState<string>('');
+  const [loras, setLoras] = useState<Array<{ name: string; strength: number }>>([]);
+  const [sampler, setSampler] = useState('euler');
+  const [scheduler, setScheduler] = useState('beta');
+
+  // Fetch all workflows for quick switcher
+  const { data: allWorkflows } = useQuery<Workflow[]>({
+    queryKey: ['workflows'],
+    queryFn: async () => (await api.get('/workflows')).data
+  });
+
+  const handleAddLora = (defaultName = 'KNP_000003000.safetensors', defaultStrength = 1.0) => {
+    setLoras(prev => [...prev, { name: defaultName, strength: defaultStrength }]);
+  };
+
+  const handleRemoveLora = (index: number) => {
+    setLoras(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateLora = (index: number, key: 'name' | 'strength', value: any) => {
+    setLoras(prev => prev.map((item, i) => i === index ? { ...item, [key]: value } : item));
+  };
+
+  const applyModelPreset = (presetName: 'krea2' | 'realistic_vision' | 'sdxl_lightning' | 'realvisxl') => {
+    if (presetName === 'krea2') {
+      setSelectedModel('lustify-v10-krea-turbo-int8_convrot.safetensors');
+      setSteps(8);
+      setCfg(1.0);
+      setSampler('euler');
+      setScheduler('beta');
+      setWidth(1152);
+      setHeight(1536);
+      setLoras([{ name: 'KNP_000003000.safetensors', strength: 1.0 }]);
+      setPromptInput('A woman is captured as a melancholic succubus with horns and wings, posed against a backdrop of ethereal white cherry blossoms and cool blue atmospheric lighting, very realistic, 8k, cinematic photography');
+      setNegPromptInput('worst quality, low quality, bad anatomy, deformed, distorted, blurry, cartoon, 3d render');
+      setRunMessage('Đã nạp thông số Krea 2 / LUSTIFY Turbo (8 steps, Euler+Beta, 1152x1536, LoRA V4 1.0x)!');
+    } else if (presetName === 'realistic_vision') {
+      setSelectedModel('realisticVisionV60B1_v51HyperVAE_418901.safetensors');
+      setSteps(20);
+      setCfg(6.0);
+      setSampler('dpmpp_sde');
+      setScheduler('karras');
+      setWidth(512);
+      setHeight(768);
+      setLoras([]);
+      setPromptInput('RAW street style photography of a beautiful model in Paris, natural candid smile, stylish beige trench coat, soft golden hour sunlight, 50mm f/1.8, bokeh, hyperdetailed skin, authentic look, 8k');
+      setNegPromptInput('deformed, bad anatomy, disfigured, poorly drawn face, mutation, extra limb, ugly, disgusting, blurred, watermark');
+      setRunMessage('Đã nạp thông số Realistic Vision V6.0 (20 steps, DPMPP_SDE Karras, 512x768)!');
+    } else if (presetName === 'sdxl_lightning') {
+      setSelectedModel('sdxl_lightning_4step.safetensors');
+      setSteps(4);
+      setCfg(1.5);
+      setSampler('euler');
+      setScheduler('sgm_uniform');
+      setWidth(1024);
+      setHeight(1024);
+      setLoras([{ name: 'add-detail-xl.safetensors', strength: 0.8 }]);
+      setRunMessage('Đã nạp thông số SDXL Lightning (4 steps, CFG 1.5, Gen 2s)!');
+    } else if (presetName === 'realvisxl') {
+      setSelectedModel('realvisxlV40_v40Bakedvae.safetensors');
+      setSteps(20);
+      setCfg(5.5);
+      setSampler('dpmpp_2m');
+      setScheduler('karras');
+      setWidth(832);
+      setHeight(1216);
+      setLoras([{ name: 'add-detail-xl.safetensors', strength: 0.8 }]);
+      setRunMessage('Đã nạp thông số RealVisXL V4.0 Studio Chiaroscuro!');
+    }
+  };
+
   // Prompt Optimizer states (inspired by linshenkx/prompt-optimizer)
   const [optimizerStyle, setOptimizerStyle] = useState<'photography' | 'fashion' | 'face' | 'asian_qwen' | 'creative'>('photography');
   const [optimizeMessage, setOptimizeMessage] = useState<string | null>(null);
@@ -71,11 +146,11 @@ export function WorkflowDetail() {
   };
 
   // Prompt form states
-  const [promptInput, setPromptInput] = useState('A cute fluffy red panda wearing a tiny wizard hat in an enchanted forest, soft magical glow, highly detailed, photorealistic');
+  const [promptInput, setPromptInput] = useState('A woman is captured as a melancholic succubus with horns and wings, posed against a backdrop of ethereal white cherry blossoms and cool blue atmospheric lighting, very realistic, 8k, cinematic photography');
   const [negPromptInput, setNegPromptInput] = useState('ugly, blurry, distorted, low quality, bad anatomy');
-  const [width, setWidth] = useState(768);
-  const [height, setHeight] = useState(768);
-  const [steps, setSteps] = useState(12);
+  const [width, setWidth] = useState(1152);
+  const [height, setHeight] = useState(1536);
+  const [steps, setSteps] = useState(8);
   const [cfg, setCfg] = useState(1.0);
 
 
@@ -342,34 +417,93 @@ export function WorkflowDetail() {
           <div className="md:col-span-2 space-y-4">
             {/* Quick Generator Panel (macOS Pro Inspector) */}
             <div className="bg-[#18181b] border border-white/[0.08] rounded-2xl p-5 space-y-4 shadow-xl">
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.08] pb-3.5 gap-3">
                 <div className="flex items-center gap-2.5">
                   <div className="p-1.5 rounded-lg bg-white/[0.06] border border-white/[0.08] text-zinc-300">
                     <SlidersHorizontal className="w-4 h-4" />
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-white tracking-tight">Trình tạo ảnh (Prompt Runner)</h3>
-                    <p className="text-[11px] text-zinc-400">Thiết lập prompt và thông số render trực tiếp trên GPU Colab</p>
+                    <p className="text-[11px] text-zinc-400">Chọn Workflow, Model, ghép nhiều LoRA & render GPU</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => runMutation.mutate({
-                    prompt: promptInput,
-                    negativePrompt: negPromptInput,
-                    steps,
-                    width,
-                    height,
-                    cfg,
-                    seed: Math.floor(Math.random() * 1000000000)
-                  })}
-                  disabled={runMutation.isPending}
-                  className="px-4 py-2 rounded-lg bg-[#0D5CFF] hover:bg-[#0077ed] active:bg-[#0062c4] disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
-                >
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>{runMutation.isPending ? 'Đang gửi...' : 'Tạo ảnh ngay'}</span>
-                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => runMutation.mutate({
+                      prompt: promptInput,
+                      negativePrompt: negPromptInput,
+                      steps,
+                      width,
+                      height,
+                      cfg,
+                      sampler,
+                      scheduler,
+                      model: selectedModel || undefined,
+                      loras: loras.length > 0 ? loras : undefined,
+                      seed: Math.floor(Math.random() * 1000000000)
+                    })}
+                    disabled={runMutation.isPending}
+                    className="px-4 py-2 rounded-lg bg-[#0D5CFF] hover:bg-[#0077ed] active:bg-[#0062c4] disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>{runMutation.isPending ? 'Đang gửi...' : 'Tạo ảnh ngay'}</span>
+                  </button>
+                </div>
               </div>
 
+              {/* 1. Workflow Quick Switcher */}
+              <div className="flex items-center gap-2 p-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                <FolderGit2 className="w-4 h-4 text-[#0D5CFF] shrink-0 ml-1" />
+                <span className="text-[11px] font-medium text-zinc-400 shrink-0">Workflow hiện tại:</span>
+                <select
+                  value={id}
+                  onChange={(e) => navigate(`/workflows/${e.target.value}`)}
+                  className="w-full bg-transparent text-xs text-zinc-100 font-medium focus:outline-none cursor-pointer"
+                >
+                  {allWorkflows?.map((w) => (
+                    <option key={w._id} value={w._id} className="bg-[#18181b] text-white">
+                      {w.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 2. One-click Model Presets */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                <span className="text-[11px] text-zinc-400 flex items-center gap-1 mr-1">
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="font-medium">Preset Model:</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => applyModelPreset('krea2')}
+                  className="px-2.5 py-1 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 text-pink-300 border border-pink-500/20 text-[11px] font-medium transition-colors"
+                >
+                  🔥 Krea 2 / LUSTIFY Turbo (8s)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyModelPreset('realistic_vision')}
+                  className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 text-[11px] font-medium transition-colors"
+                >
+                  📷 Realistic Vision V6 (5s)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyModelPreset('sdxl_lightning')}
+                  className="px-2.5 py-1 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/20 text-[11px] font-medium transition-colors"
+                >
+                  ⚡ SDXL Lightning (2s)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyModelPreset('realvisxl')}
+                  className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 text-[11px] font-medium transition-colors"
+                >
+                  🎨 RealVisXL V4.0 (15s)
+                </button>
+              </div>
 
               {/* Error notice if runtime disconnected */}
               {runError && (
@@ -379,7 +513,7 @@ export function WorkflowDetail() {
                     <div>
                       <p className="font-semibold text-rose-200">Không thể kết nối đến GPU Colab:</p>
                       <p className="text-[11px] text-rose-300/90 mt-0.5">{runError}</p>
-                      <p className="text-[11px] text-zinc-400 mt-1">Đường hầm Cloudflare có thể đã hết hạn. Hãy copy link Cloudflare mới từ Colab và dán vào trang Runtime.</p>
+                      <p className="text-[11px] text-zinc-400 mt-1">Đường hầm có thể đã hết hạn. Hãy kiểm tra endpoint trong trang Runtime.</p>
                     </div>
                   </div>
                   <Link
@@ -391,6 +525,7 @@ export function WorkflowDetail() {
                 </div>
               )}
 
+              {/* Positive Prompt */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-medium text-zinc-300">
@@ -423,6 +558,7 @@ export function WorkflowDetail() {
                 />
               </div>
 
+              {/* Negative Prompt */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-medium text-zinc-400">
@@ -450,14 +586,116 @@ export function WorkflowDetail() {
                   type="text"
                   value={negPromptInput}
                   onChange={(e) => setNegPromptInput(e.target.value)}
-                  placeholder="ugly, blurry, distorted, low quality..."
+                  placeholder="worst quality, low quality, bad anatomy, deformed..."
                   className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] focus:border-[#0D5CFF] focus:ring-1 focus:ring-[#0D5CFF] px-3.5 py-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none transition-all"
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              {/* 3. Model & LoRA Management Box */}
+              <div className="p-3.5 rounded-xl bg-black/30 border border-white/[0.06] space-y-3.5">
+                {/* Model Checkpoint Selector */}
                 <div>
-                  <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1.5">Resolution</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
+                      <Boxes className="w-3.5 h-3.5 text-[#0D5CFF]" />
+                      <span>Chọn Model (Checkpoint / UNET)</span>
+                    </label>
+                    <span className="text-[10px] text-zinc-500">Tự động nạp vào bộ nhớ</span>
+                  </div>
+                  <select
+                    value={selectedModel}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF]"
+                  >
+                    <option value="">-- Mặc định theo Workflow ({workflow.models?.[0]?.name || 'Auto'}) --</option>
+                    <option value="lustify-v10-krea-turbo-int8_convrot.safetensors">lustify-v10-krea-turbo-int8_convrot.safetensors (LUSTIFY Krea 2 Turbo int8)</option>
+                    <option value="lustifyNSFWCheckpoint_v10Krea2_2997637.safetensors">lustifyNSFWCheckpoint_v10Krea2_2997637.safetensors (LUSTIFY Checkpoint Krea 2)</option>
+                    <option value="realisticVisionV60B1_v51HyperVAE_418901.safetensors">realisticVisionV60B1_v51HyperVAE_418901.safetensors (Realistic Vision V6.0 Hyper)</option>
+                    <option value="realisticVisionV60B1_v51VAE.safetensors">realisticVisionV60B1_v51VAE.safetensors (Realistic Vision V5.1 VAE)</option>
+                    <option value="sdxl_lightning_4step.safetensors">sdxl_lightning_4step.safetensors (SDXL Lightning - 2s)</option>
+                    <option value="sd_xl_turbo_1.0_fp16.safetensors">sd_xl_turbo_1.0_fp16.safetensors (SDXL Turbo - 1s)</option>
+                    <option value="realvisxlV40_v40Bakedvae.safetensors">realvisxlV40_v40Bakedvae.safetensors (RealVisXL V4.0)</option>
+                    <option value="qwen_image_2.1_int8_convrot.safetensors">qwen_image_2.1_int8_convrot.safetensors (Qwen-Image 2.1)</option>
+                  </select>
+                </div>
+
+                {/* LoRA Stack (Hỗ trợ 1 hoặc nhiều LoRA) */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="text-xs font-medium text-zinc-300">LoRA Stack</span>
+                      {loras.length > 0 && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300 font-mono">
+                          {loras.length} LoRA
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleAddLora('KNP_000003000.safetensors', 1.0)}
+                      className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-zinc-200 border border-white/[0.08] transition-colors"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>Thêm LoRA</span>
+                    </button>
+                  </div>
+
+                  {loras.length === 0 ? (
+                    <div
+                      onClick={() => handleAddLora('KNP_000003000.safetensors', 1.0)}
+                      className="p-3 rounded-xl border border-dashed border-white/[0.1] hover:border-white/[0.2] text-center text-xs text-zinc-500 hover:text-zinc-400 cursor-pointer transition-colors"
+                    >
+                      + Chưa gắn LoRA. Bấm để thêm LoRA Krea 2 NSFW V4 hoặc Add-Detail-XL
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {loras.map((lora, idx) => (
+                        <div key={idx} className="p-2.5 rounded-xl bg-[#121214] border border-white/[0.08] flex flex-col md:flex-row md:items-center gap-2.5">
+                          <div className="flex-1">
+                            <select
+                              value={lora.name}
+                              onChange={(e) => handleUpdateLora(idx, 'name', e.target.value)}
+                              className="w-full bg-[#18181b] border border-white/[0.08] px-2.5 py-1.5 rounded-lg text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF]"
+                            >
+                              <option value="KNP_000003000.safetensors">KNP_000003000.safetensors (Krea 2 NSFW V4)</option>
+                              <option value="add-detail-xl.safetensors">add-detail-xl.safetensors (Add Detail XL)</option>
+                            </select>
+                          </div>
+                          <div className="flex items-center gap-2 md:w-56 shrink-0">
+                            <span className="text-[10px] text-zinc-400">Weight:</span>
+                            <input
+                              type="range"
+                              min="0.1"
+                              max="2.0"
+                              step="0.05"
+                              value={lora.strength}
+                              onChange={(e) => handleUpdateLora(idx, 'strength', parseFloat(e.target.value))}
+                              className="flex-1 accent-[#0D5CFF] h-1.5 cursor-pointer"
+                            />
+                            <span className="text-[11px] font-mono text-zinc-300 w-10 text-right">
+                              {lora.strength.toFixed(2)}x
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveLora(idx)}
+                            className="p-1.5 rounded-lg hover:bg-rose-500/20 text-zinc-500 hover:text-rose-400 transition-colors self-end md:self-auto shrink-0"
+                            title="Xóa LoRA này"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 4. Generation Parameters Grid (Resolution, Steps, CFG, Sampler, Scheduler) */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5">
+                <div>
+                  <label className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider block mb-1">Resolution</label>
                   <select
                     value={`${width}x${height}`}
                     onChange={(e) => {
@@ -465,38 +703,73 @@ export function WorkflowDetail() {
                       setWidth(w);
                       setHeight(h);
                     }}
-                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF] focus:ring-1 focus:ring-[#0D5CFF]"
+                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-2.5 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF]"
                   >
-                    <option value="768x768">768 x 768 (Khuyến nghị)</option>
-                    <option value="1024x1024">1024 x 1024 (Chuẩn HD)</option>
-                    <option value="832x1216">832 x 1216 (Dọc / Portrait)</option>
-                    <option value="1216x832">1216 x 832 (Ngang / Landscape)</option>
+                    <option value="1152x1536">1152 x 1536 (Krea 2 Dọc)</option>
+                    <option value="1536x1152">1536 x 1152 (Krea 2 Ngang)</option>
+                    <option value="1024x1024">1024 x 1024 (SDXL Vuông)</option>
+                    <option value="832x1216">832 x 1216 (SDXL Dọc)</option>
+                    <option value="1216x832">1216 x 832 (SDXL Ngang)</option>
+                    <option value="512x768">512 x 768 (SD1.5 Dọc)</option>
+                    <option value="768x768">768 x 768 (SD1.5 Vuông)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1.5">Steps</label>
+                  <label className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider block mb-1">Steps</label>
                   <input
                     type="number"
-                    min={4}
-                    max={40}
+                    min={1}
+                    max={50}
                     value={steps}
                     onChange={(e) => setSteps(Number(e.target.value))}
-                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF] focus:ring-1 focus:ring-[#0D5CFF]"
+                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-2.5 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block mb-1.5">CFG Scale</label>
+                  <label className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider block mb-1">CFG Scale</label>
                   <input
                     type="number"
                     step={0.5}
                     min={1}
-                    max={10}
+                    max={15}
                     value={cfg}
                     onChange={(e) => setCfg(Number(e.target.value))}
-                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF] focus:ring-1 focus:ring-[#0D5CFF]"
+                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-2.5 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF]"
                   />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider block mb-1">Sampler</label>
+                  <select
+                    value={sampler}
+                    onChange={(e) => setSampler(e.target.value)}
+                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-2.5 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF]"
+                  >
+                    <option value="euler">euler</option>
+                    <option value="dpmpp_sde">dpmpp_sde</option>
+                    <option value="dpmpp_2m">dpmpp_2m</option>
+                    <option value="heun">heun</option>
+                    <option value="ddim">ddim</option>
+                    <option value="uni_pc">uni_pc</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider block mb-1">Scheduler</label>
+                  <select
+                    value={scheduler}
+                    onChange={(e) => setScheduler(e.target.value)}
+                    className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-2.5 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF]"
+                  >
+                    <option value="beta">beta (Krea 2)</option>
+                    <option value="simple">simple</option>
+                    <option value="karras">karras</option>
+                    <option value="sgm_uniform">sgm_uniform</option>
+                    <option value="normal">normal</option>
+                    <option value="exponential">exponential</option>
+                  </select>
                 </div>
               </div>
 

@@ -1,0 +1,112 @@
+{
+  "1": {
+    "inputs": {
+      "unet_name": "lustify-v10-krea-turbo-int8_convrot.safetensors"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load LUSTIFY Krea 2 UNET (Turbo)"
+    }
+  },
+  "2": {
+    "inputs": {
+      "clip_name": "qwen3vl_4b_fp8_scaled.safetensors",
+      "type": "krea2"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load Krea 2 Text Encoder"
+    }
+  },
+  "3": {
+    "inputs": {
+      "vae_name": "wan_2.1_vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load Krea 2 VAE (Wan 2.1)"
+    }
+  },
+  "4": {
+    "inputs": {
+      "lora_name": "KNP_000003000.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": ["1", 0],
+      "clip": ["2", 0]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Load Krea 2 NSFW V4 LoRA"
+    }
+  },
+  "5": {
+    "inputs": {
+      "text": "A woman is captured as a melancholic succubus with horns and wings, posed against a backdrop of ethereal white cherry blossoms and cool blue atmospheric lighting, very realistic, 8k, cinematic photography",
+      "clip": ["4", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Positive Prompt"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": "worst quality, low quality, bad anatomy, deformed, distorted, blurry, cartoon, 3d render",
+      "clip": ["4", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Negative Prompt"
+    }
+  },
+  "7": {
+    "inputs": {
+      "width": 1152,
+      "height": 1536,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Empty Latent (1152x1536 Portrait)"
+    }
+  },
+  "8": {
+    "inputs": {
+      "seed": 209136617504965,
+      "steps": 8,
+      "cfg": 1.0,
+      "sampler_name": "euler",
+      "scheduler": "beta",
+      "denoise": 1.0,
+      "model": ["4", 0],
+      "positive": ["5", 0],
+      "negative": ["6", 0],
+      "latent_image": ["7", 0]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler (Krea 2 Turbo 8 Steps)"
+    }
+  },
+  "9": {
+    "inputs": {
+      "samples": ["8", 0],
+      "vae": ["3", 0]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "10": {
+    "inputs": {
+      "filename_prefix": "LUSTIFY_Krea2",
+      "images": ["9", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  }
+}

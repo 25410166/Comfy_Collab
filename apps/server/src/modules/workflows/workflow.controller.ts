@@ -271,7 +271,160 @@ export class WorkflowController {
       }
 
       // Apply dynamic prompt, seed, steps, resolution overrides from req.body
-      const { prompt, negativePrompt, seed, steps, width, height, cfg } = req.body || {};
+      const {
+        prompt,
+        negativePrompt,
+        seed,
+        steps,
+        width,
+        height,
+        cfg,
+        sampler,
+        scheduler,
+        model,
+        loras
+      } = req.body || {};
+
+      // 1. Dynamic Model Override
+      if (model) {
+        for (const [, node] of Object.entries(promptPayload as Record<string, any>)) {
+          if (node.class_type === 'CheckpointLoaderSimple') {
+            if (node.inputs) node.inputs.ckpt_name = model;
+          } else if (node.class_type === 'UNETLoader' || node.class_type === 'UnetLoaderGGUF') {
+            if (node.inputs) node.inputs.unet_name = model;
+          }
+        }
+      }
+
+      // 2. Dynamic Sampler & Scheduler Override
+      if (sampler !== undefined || scheduler !== undefined) {
+        for (const [, node] of Object.entries(promptPayload as Record<string, any>)) {
+          if (node.class_type === 'KSampler' || node.class_type === 'KSamplerAdvanced') {
+            if (node.inputs) {
+              if (sampler !== undefined && sampler) node.inputs.sampler_name = sampler;
+              if (scheduler !== undefined && scheduler) node.inputs.scheduler = scheduler;
+            }
+          }
+        }
+      }
+
+      // 3. Dynamic Multi-LoRA Injection
+      if (Array.isArray(loras) && loras.length > 0) {
+        const validLoras = loras.filter((l: any) => l && l.name);
+        if (validLoras.length > 0) {
+          let existingLoraId: string | null = null;
+          for (const [nid, node] of Object.entries(promptPayload as Record<string, any>)) {
+            if (node.class_type === 'LoraLoader') {
+              existingLoraId = nid;
+              break;
+            }
+          }
+
+          if (existingLoraId) {
+            promptPayload[existingLoraId].inputs.lora_name = validLoras[0].name;
+            promptPayload[existingLoraId].inputs.strength_model = validLoras[0].strength ?? 1.0;
+            promptPayload[existingLoraId].inputs.strength_clip = validLoras[0].strength ?? 1.0;
+
+            let prevModel = [existingLoraId, 0];
+            let prevClip = [existingLoraId, 1];
+            let maxId = Math.max(...Object.keys(promptPayload).map(k => parseInt(k, 10) || 0));
+
+            for (let i = 1; i < validLoras.length; i++) {
+              maxId++;
+              const newLoraId = maxId.toString();
+              promptPayload[newLoraId] = {
+                class_type: 'LoraLoader',
+                inputs: {
+                  lora_name: validLoras[i].name,
+                  strength_model: validLoras[i].strength ?? 1.0,
+                  strength_clip: validLoras[i].strength ?? 1.0,
+                  model: prevModel,
+                  clip: prevClip
+                },
+                _meta: { title: `LoRA ${i + 1}: ${validLoras[i].name}` }
+              };
+
+              for (const [nid, consumer] of Object.entries(promptPayload as Record<string, any>)) {
+                if (nid === newLoraId || !consumer.inputs) continue;
+                if (Array.isArray(consumer.inputs.model) && consumer.inputs.model[0] === prevModel[0]) {
+                  consumer.inputs.model = [newLoraId, 0];
+                }
+                if (Array.isArray(consumer.inputs.clip) && consumer.inputs.clip[0] === prevClip[0]) {
+                  consumer.inputs.clip = [newLoraId, 1];
+                }
+              }
+
+              prevModel = [newLoraId, 0];
+              prevClip = [newLoraId, 1];
+            }
+          } else {
+            let modelSourceNodeId: string | null = null;
+            let modelSourceSlot = 0;
+            let clipSourceNodeId: string | null = null;
+            let clipSourceSlot = 1;
+
+            for (const [nid, node] of Object.entries(promptPayload as Record<string, any>)) {
+              if (node.class_type === 'CheckpointLoaderSimple') {
+                modelSourceNodeId = nid;
+                modelSourceSlot = 0;
+                clipSourceNodeId = nid;
+                clipSourceSlot = 1;
+                break;
+              }
+            }
+
+            if (!modelSourceNodeId) {
+              for (const [nid, node] of Object.entries(promptPayload as Record<string, any>)) {
+                if (node.class_type === 'UNETLoader' || node.class_type === 'UnetLoaderGGUF') {
+                  modelSourceNodeId = nid;
+                  modelSourceSlot = 0;
+                }
+                if (node.class_type === 'CLIPLoader') {
+                  clipSourceNodeId = nid;
+                  clipSourceSlot = 0;
+                }
+              }
+            }
+
+            if (modelSourceNodeId && clipSourceNodeId) {
+              let prevModel = [modelSourceNodeId, modelSourceSlot];
+              let prevClip = [clipSourceNodeId, clipSourceSlot];
+              let maxId = Math.max(...Object.keys(promptPayload).map(k => parseInt(k, 10) || 0));
+
+              for (let i = 0; i < validLoras.length; i++) {
+                maxId++;
+                const newLoraId = maxId.toString();
+                promptPayload[newLoraId] = {
+                  class_type: 'LoraLoader',
+                  inputs: {
+                    lora_name: validLoras[i].name,
+                    strength_model: validLoras[i].strength ?? 1.0,
+                    strength_clip: validLoras[i].strength ?? 1.0,
+                    model: prevModel,
+                    clip: prevClip
+                  },
+                  _meta: { title: `Injected LoRA: ${validLoras[i].name}` }
+                };
+
+                for (const [nid, consumer] of Object.entries(promptPayload as Record<string, any>)) {
+                  if (nid === newLoraId || nid === modelSourceNodeId || nid === clipSourceNodeId || !consumer.inputs) continue;
+                  if (Array.isArray(consumer.inputs.model) && consumer.inputs.model[0] === prevModel[0]) {
+                    consumer.inputs.model = [newLoraId, 0];
+                  }
+                  if (Array.isArray(consumer.inputs.clip) && consumer.inputs.clip[0] === prevClip[0]) {
+                    consumer.inputs.clip = [newLoraId, 1];
+                  }
+                }
+
+                prevModel = [newLoraId, 0];
+                prevClip = [newLoraId, 1];
+              }
+            }
+          }
+        }
+      }
+
+      // 4. Prompt, Resolution, Seed, Steps, CFG overrides
       if (prompt !== undefined || negativePrompt !== undefined || seed !== undefined || steps !== undefined || width !== undefined || height !== undefined || cfg !== undefined) {
         // Detect positive & negative node IDs from KSampler connections if available
         let detectedPosNodeId: string | null = null;
@@ -288,7 +441,7 @@ export class WorkflowController {
           const inputs = node.inputs;
           if (!inputs) continue;
 
-          // 1. Text encode nodes (CLIPTextEncode or TextEncodeQwenImage21)
+          // Text encode nodes (CLIPTextEncode or TextEncodeQwenImage21)
           if (classType === 'TextEncodeQwenImage21') {
             if (prompt !== undefined) inputs.prompt = prompt;
             if (negativePrompt !== undefined) inputs.negative_prompt = negativePrompt;
@@ -308,14 +461,14 @@ export class WorkflowController {
             }
           }
 
-          // 2. KSampler nodes
+          // KSampler nodes
           if (classType === 'KSampler' || classType === 'KSamplerAdvanced') {
             if (seed !== undefined) inputs.seed = seed;
             if (steps !== undefined) inputs.steps = steps;
             if (cfg !== undefined) inputs.cfg = cfg;
           }
 
-          // 3. Latent image
+          // Latent image
           if (classType === 'EmptyLatentImage') {
             if (width !== undefined) inputs.width = width;
             if (height !== undefined) inputs.height = height;
@@ -414,6 +567,7 @@ export class WorkflowController {
           samplerName: extractedSampler,
           scheduler: extractedScheduler,
           model: extractedModel,
+          loras: loras || [],
           width: extractedWidth,
           height: extractedHeight
         },
