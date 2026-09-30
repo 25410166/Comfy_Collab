@@ -295,10 +295,16 @@ export class WorkflowController {
             if (width !== undefined) inputs.resolution = Math.max(width, height || width);
           } else if (classType === 'CLIPTextEncode') {
             const title = (node._meta?.title || '').toLowerCase();
-            if (nodeId === detectedNegNodeId || title.includes('negative')) {
-              if (negativePrompt !== undefined) inputs.text = negativePrompt;
-            } else if (nodeId === detectedPosNodeId || title.includes('positive') || !title.includes('negative')) {
-              if (prompt !== undefined) inputs.text = prompt;
+            const isNegative = nodeId === detectedNegNodeId || title.includes('negative') || title.includes('neg');
+            const isPositive = nodeId === detectedPosNodeId || title.includes('positive') || title.includes('pos');
+            
+            if (isNegative && negativePrompt !== undefined) {
+              inputs.text = negativePrompt;
+            } else if (isPositive && prompt !== undefined) {
+              inputs.text = prompt;
+            } else if (!detectedPosNodeId && !detectedNegNodeId && !title.includes('neg') && prompt !== undefined) {
+              // Fallback for simple workflows without explicit KSampler links
+              inputs.text = prompt;
             }
           }
 

@@ -7,6 +7,13 @@ import { socketService } from './socket.service.js';
 import { Generation } from '../database/models/Generation.js';
 import { config } from '../config.js';
 
+// Bypass ngrok/localtunnel warning pages
+axios.interceptors.request.use(req => {
+  req.headers['Bypass-Tunnel-Reminder'] = 'true';
+  req.headers['User-Agent'] = 'curl/7.68.0';
+  return req;
+});
+
 export interface ComfyPromptResponse {
   prompt_id: string;
   number: number;
@@ -46,6 +53,16 @@ export class ComfyUIService {
   async checkHealth(): Promise<{ ok: boolean; system?: any; error?: string }> {
     try {
       const res = await axios.get(`${this.endpoint}/system_stats`, { timeout: 15000 });
+      
+      // Cloudflare/Ngrok might return a 200 HTML page when blocked or warning
+      if (typeof res.data !== 'object' || !res.data || !res.data.system) {
+        return { ok: false, error: 'Invalid response (Might be blocked by Cloudflare/Ngrok tunnel)' };
+      }
+
+      if (!this.isConnected) {
+        return { ok: false, error: 'WebSocket is disconnected' };
+      }
+
       return { ok: true, system: res.data };
     } catch (err: any) {
       return { ok: false, error: err.message };
@@ -108,7 +125,9 @@ export class ComfyUIService {
         ]);
 
         const queueRunning = queueRes.status === 'fulfilled' ? queueRes.value.data?.queue_running || [] : [];
+        const queuePending = queueRes.status === 'fulfilled' ? queueRes.value.data?.queue_pending || [] : [];
         const runningPromptIds = new Set(queueRunning.map((item: any) => item[1]));
+        const pendingPromptIds = new Set(queuePending.map((item: any) => item[1]));
 
         const historyData = historyRes.status === 'fulfilled' ? historyRes.value.data || {} : {};
 
@@ -127,6 +146,22 @@ export class ComfyUIService {
               await gen.save();
               socketService.emit('generation.started', { promptId: gen.promptId });
             }
+            continue;
+          }
+
+          // 3. Check if waiting in queue
+          if (pendingPromptIds.has(gen.promptId)) {
+            continue;
+          }
+
+          // 4. Lost job (ComfyUI restarted or dropped it)
+          // Ensure we don't aggressively fail immediately if ComfyUI just connected and queues haven't synced
+          const timeSinceCreated = Date.now() - new Date(gen.createdAt).getTime();
+          if (timeSinceCreated > 30000) {
+            gen.status = 'failed';
+            gen.error = 'Job lost from ComfyUI queue (Có thể server đã khởi động lại)';
+            await gen.save();
+            socketService.emit('generation.failed', { promptId: gen.promptId, error: gen.error });
           }
         }
       } catch (e) {
@@ -271,7 +306,7 @@ export class ComfyUIService {
       if (historyData.outputs) {
         for (const nodeId of Object.keys(historyData.outputs)) {
           const nodeOutput = historyData.outputs[nodeId];
-          const images = nodeOutput.images || [];
+          const images = nodeOutput.images || nodeOutput.gifs || nodeOutput.videos || [];
           for (const img of images) {
             const filename = img.filename;
             const subfolder = img.subfolder || '';

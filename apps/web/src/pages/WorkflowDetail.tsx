@@ -370,71 +370,6 @@ export function WorkflowDetail() {
                 </button>
               </div>
 
-              {/* Smart Prompt Optimizer Toolbar (macOS Pro style) */}
-              <div className="p-3.5 rounded-xl bg-[#131315] border border-white/[0.08] space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-white/[0.06] text-zinc-300">
-                      <Wand2 className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-semibold text-zinc-200 block">
-                        AI Prompt Optimizer
-                      </span>
-                      <span className="text-[11px] text-zinc-400">
-                        Nhập ý tưởng ngắn và chọn phong cách, AI sẽ tối ưu prompt 5 lớp chuẩn 8k
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => optimizeMutation.mutate({ prompt: promptInput, style: optimizerStyle })}
-                    disabled={optimizeMutation.isPending || !promptInput.trim()}
-                    className="px-3.5 py-1.5 rounded-lg bg-[#0D5CFF] hover:bg-[#0077ed] active:bg-[#0062c4] disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm shrink-0"
-                  >
-                    <Wand2 className="w-3.5 h-3.5" />
-                    <span>{optimizeMutation.isPending ? 'Đang phân tích...' : 'Tối ưu hóa Prompt'}</span>
-                  </button>
-                </div>
-
-                {/* Style Selector Chips (macOS segmented pill style with clean SF Lucide icons) */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-                  <span className="text-zinc-500 shrink-0 font-medium mr-1 text-[11px] uppercase tracking-wider">Phong cách:</span>
-                  {[
-                    { id: 'photography', label: 'Nhiếp ảnh thực tế', icon: Camera },
-                    { id: 'fashion', label: 'Thời trang & Trang phục', icon: Shirt },
-                    { id: 'face', label: 'Chân dung chi tiết', icon: UserCheck },
-                    { id: 'asian_qwen', label: 'Điện ảnh Á Đông', icon: Compass },
-                    { id: 'creative', label: 'Sáng tạo nghệ thuật', icon: Palette }
-                  ].map((s) => {
-                    const StyleIcon = s.icon;
-                    const isSelected = optimizerStyle === s.id;
-                    return (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => setOptimizerStyle(s.id as any)}
-                        className={`px-2.5 py-1 rounded-lg shrink-0 font-medium text-xs flex items-center gap-1.5 transition-all ${
-                          isSelected
-                            ? 'bg-[#27272a] text-white shadow-sm border border-white/10'
-                            : 'bg-white/[0.03] text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] border border-transparent'
-                        }`}
-                      >
-                        <StyleIcon className="w-3 h-3 text-zinc-400" />
-                        <span>{s.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {optimizeMessage && (
-                  <div className="text-[11px] text-emerald-400 bg-emerald-950/40 border border-emerald-800/40 rounded-lg p-2.5 flex items-center gap-2 animate-fade-in">
-                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                    <span>{optimizeMessage}</span>
-                  </div>
-                )}
-              </div>
 
               {/* Error notice if runtime disconnected */}
               {runError && (
@@ -923,20 +858,80 @@ export function WorkflowDetail() {
             </div>
           </div>
 
-          {/* Quick Dependency Overview Sidebar */}
+          {/* Right Column: AI Prompt Optimizer */}
           <div className="space-y-4">
-            <div className="bg-[#111827] border border-slate-800 rounded-xl p-5">
-              <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">
-                Required Models
-              </h3>
-              <div className="space-y-2">
-                {workflow.models?.map((m, idx) => (
-                  <div key={idx} className="p-2 rounded bg-slate-900 border border-slate-800/80 text-xs">
-                    <div className="font-mono text-slate-300 truncate">{m.name}</div>
-                    <div className="text-[10px] text-purple-400 uppercase mt-0.5">{m.type}</div>
+            <div className="p-5 rounded-2xl bg-[#050811]/60 backdrop-blur-xl border border-white/[0.05] shadow-[0_8px_32px_-10px_rgba(0,0,0,0.5)] space-y-4 sticky top-6">
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-[#0D5CFF]/15 text-[#00F0FF] border border-[#0D5CFF]/30 shadow-[0_0_15px_rgba(13,92,255,0.3)]">
+                    <Wand2 className="w-5 h-5" />
                   </div>
-                ))}
+                  <h3 className="text-base font-bold text-white tracking-tight">
+                    AI Optimizer
+                  </h3>
+                </div>
+                <p className="text-[11px] text-zinc-400 leading-relaxed pl-1">
+                  Chọn phong cách nghệ thuật, AI sẽ tự động phân tích và viết lại prompt 5 lớp đạt chuẩn 8k UHD.
+                </p>
               </div>
+
+              {/* Vertical Style Selector */}
+              <div className="flex flex-col gap-2 pt-2">
+                {[
+                  { id: 'photography', label: 'Nhiếp ảnh thực tế', icon: Camera, desc: 'Canon EOS, 85mm, Chiaroscuro' },
+                  { id: 'fashion', label: 'Thời trang & Trang phục', icon: Shirt, desc: 'Vogue editorial, studio lighting' },
+                  { id: 'face', label: 'Chân dung chi tiết', icon: UserCheck, desc: 'Skin pores, highly detailed face' },
+                  { id: 'asian_qwen', label: 'Điện ảnh Á Đông', icon: Compass, desc: 'Cinematic lighting, Wong Kar-wai' },
+                  { id: 'creative', label: 'Sáng tạo nghệ thuật', icon: Palette, desc: 'Digital art, concept illustration' }
+                ].map((s) => {
+                  const StyleIcon = s.icon;
+                  const isSelected = optimizerStyle === s.id;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setOptimizerStyle(s.id as any)}
+                      className={`px-3.5 py-3 rounded-xl flex items-center justify-between transition-all w-full text-left group ${
+                        isSelected
+                          ? 'bg-gradient-to-r from-[#0D5CFF]/20 to-[#00F0FF]/10 border border-[#0D5CFF]/40 shadow-[0_0_20px_-5px_rgba(13,92,255,0.4)]'
+                          : 'bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.06] hover:border-white/[0.08]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`p-1.5 rounded-lg ${isSelected ? 'bg-[#0D5CFF]/20 text-[#00F0FF]' : 'bg-white/[0.05] text-zinc-400 group-hover:text-zinc-200'}`}>
+                          <StyleIcon className="w-4 h-4" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className={`text-xs font-semibold ${isSelected ? 'text-white' : 'text-zinc-300 group-hover:text-white'}`}>
+                            {s.label}
+                          </span>
+                          <span className="text-[9px] font-mono text-zinc-500 mt-0.5 line-clamp-1">{s.desc}</span>
+                        </div>
+                      </div>
+                      {isSelected && <CheckCircle2 className="w-4 h-4 text-[#00F0FF]" />}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => optimizeMutation.mutate({ prompt: promptInput, style: optimizerStyle })}
+                  disabled={optimizeMutation.isPending || !promptInput.trim()}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-[#0D5CFF] to-[#0077ed] hover:to-[#00F0FF] active:scale-[0.98] disabled:opacity-50 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(13,92,255,0.3)] hover:shadow-[0_0_30px_rgba(0,240,255,0.4)]"
+                >
+                  <Wand2 className="w-4 h-4" />
+                  <span>{optimizeMutation.isPending ? 'Đang phân tích 5 lớp...' : 'Tối ưu hóa Prompt'}</span>
+                </button>
+              </div>
+
+              {optimizeMessage && (
+                <div className="text-[11px] text-[#00F0FF] bg-[#00F0FF]/10 border border-[#00F0FF]/20 rounded-xl p-3 flex items-start gap-2.5 animate-fade-in mt-2 shadow-inner">
+                  <Sparkles className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span className="leading-relaxed font-medium">{optimizeMessage}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
