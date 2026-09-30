@@ -608,10 +608,12 @@ export function WorkflowDetail() {
                     className="w-full rounded-xl bg-[#0f0f11] border border-white/[0.08] px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF]"
                   >
                     <option value="">-- Mặc định theo Workflow ({workflow.models?.[0]?.name || 'Auto'}) --</option>
-                    <option value="lustify-v10-krea-turbo-int8_convrot.safetensors">lustify-v10-krea-turbo-int8_convrot.safetensors (LUSTIFY Krea 2 Turbo int8)</option>
+                    <option value="lustify_workflows_krea_2_sdxl.safetensors">lustify_workflows_krea_2_sdxl.safetensors (Krea 2 Turbo / LUSTIFY!)</option>
                     <option value="lustifyNSFWCheckpoint_v10Krea2_2997637.safetensors">lustifyNSFWCheckpoint_v10Krea2_2997637.safetensors (LUSTIFY Checkpoint Krea 2)</option>
-                    <option value="realisticVisionV60B1_v51HyperVAE_418901.safetensors">realisticVisionV60B1_v51HyperVAE_418901.safetensors (Realistic Vision V6.0 Hyper)</option>
-                    <option value="realisticVisionV60B1_v51VAE.safetensors">realisticVisionV60B1_v51VAE.safetensors (Realistic Vision V5.1 VAE)</option>
+                    <option value="realisticVisionV60B1_v51VAE.safetensors">realisticVisionV60B1_v51VAE.safetensors (Realistic Vision V6.0 B1 SD1.5)</option>
+                    <option value="waiIllustriousSDXL_v170.safetensors">waiIllustriousSDXL_v170.safetensors (WAI-illustrious-SDXL)</option>
+                    <option value="majicmixRealistic_v7.safetensors">majicmixRealistic_v7.safetensors (majicMIX realistic SD1.5)</option>
+                    <option value="ponyDiffusionV6XL_v6StartWithThisOne.safetensors">ponyDiffusionV6XL_v6StartWithThisOne.safetensors (Pony Diffusion V6 XL)</option>
                     <option value="sdxl_lightning_4step.safetensors">sdxl_lightning_4step.safetensors (SDXL Lightning - 2s)</option>
                     <option value="sd_xl_turbo_1.0_fp16.safetensors">sd_xl_turbo_1.0_fp16.safetensors (SDXL Turbo - 1s)</option>
                     <option value="realvisxlV40_v40Bakedvae.safetensors">realvisxlV40_v40Bakedvae.safetensors (RealVisXL V4.0)</option>
@@ -659,6 +661,9 @@ export function WorkflowDetail() {
                               className="w-full bg-[#18181b] border border-white/[0.08] px-2.5 py-1.5 rounded-lg text-xs text-zinc-200 focus:outline-none focus:border-[#0D5CFF]"
                             >
                               <option value="KNP_000003000.safetensors">KNP_000003000.safetensors (Krea 2 NSFW V4)</option>
+                              <option value="krea_2_nsfw_v4.safetensors">krea_2_nsfw_v4.safetensors (Krea 2 NSFW V4 Alt)</option>
+                              <option value="Expressive_H-000001.safetensors">Expressive_H-000001.safetensors (ExpressiveH Hentai Style)</option>
+                              <option value="2BoutOval_K2v3_400.safetensors">2BoutOval_K2v3_400.safetensors (Breasts Out Fashion Clothing)</option>
                               <option value="add-detail-xl.safetensors">add-detail-xl.safetensors (Add Detail XL)</option>
                             </select>
                           </div>
