@@ -13,4 +13,6 @@ data/downloads/*
 data/backups/*
 !data/backups/.gitkeep
 apps/data/
+__pycache__/
+*.pyc
 
