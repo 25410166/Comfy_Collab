@@ -69,7 +69,7 @@ npm start
 ## ☁️ Google Colab GPU Setup
 
 1. Open `colab/ComfyStudio.ipynb` in [Google Colab](https://colab.research.google.com).
-2. **Cell 1**: Mount Google Drive (`MyDrive/ComfyStudio/models`).
+2. **Cell 1**: Mount Google Drive. The runtimes share both `MyDrive/SD_Studio/models` and `MyDrive/ComfyStudio/models`; Automatic1111 exposes the union of both roots so existing checkpoints, LoRAs, VAEs, ControlNet models, embeddings, and upscalers remain available.
 3. **Cell 2**: Clones ComfyUI, configures dependencies, links models to Google Drive.
 4. **Cell 3**: Starts ComfyUI and exposes via Cloudflare Tunnel (`https://xxxx.trycloudflare.com`).
 5. Copy the generated Tunnel URL into **ComfyUI Studio -> Runtime** and click **Connect**.
